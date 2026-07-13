@@ -8,6 +8,8 @@ import "./CircularGallery.css";
 import { GlassRingTrack } from "./systems/ring/GlassRingTrack";
 
 const MAX_LABEL_SCALE = 1.6;
+const LABEL_VISUAL_SCALE = 0.9;
+const LABEL_CURVE_STRENGTH = 0.22;
 const MAX_LABEL_FONT_WEIGHT = "700";
 const MAX_LABEL_LETTER_SPACING = "0.12em";
 const MINIMUM_GAP_FONT_RATIO = 0.75;
@@ -69,10 +71,17 @@ class Media {
     this.element = document.createElement("button");
     this.element.className = "circular-gallery__item";
     this.element.type = "button";
-    this.element.textContent = this.text;
     this.element.setAttribute("aria-label", this.text);
     this.element.style.color = this.textColor;
     this.element.style.font = this.font;
+    this.letters = Array.from(this.text, (character) => {
+      const letter = document.createElement("span");
+      letter.className = "circular-gallery__letter";
+      letter.setAttribute("aria-hidden", "true");
+      letter.textContent = character === " " ? "\u00a0" : character;
+      return letter;
+    });
+    this.element.append(...this.letters);
     this.element.addEventListener("click", this.boundOnClick);
     this.container.appendChild(this.element);
   }
@@ -87,25 +96,76 @@ class Media {
     const previousLetterSpacing = this.element.style.letterSpacing;
     const previousTransform = this.element.style.transform;
     const previousVisibility = this.element.style.visibility;
+    const previousLetterTransforms = this.letters.map(
+      (letter) => letter.style.transform,
+    );
 
     this.element.style.fontWeight = MAX_LABEL_FONT_WEIGHT;
     this.element.style.letterSpacing = MAX_LABEL_LETTER_SPACING;
     this.element.style.transform = "none";
     this.element.style.visibility = "hidden";
+    this.letters.forEach((letter) => {
+      letter.style.transform = "none";
+    });
 
     const computedStyle = window.getComputedStyle(this.element);
     const fontSize = Number.parseFloat(computedStyle.fontSize);
-    const textWidth = this.element.getBoundingClientRect().width * MAX_LABEL_SCALE;
+    const elementBounds = this.element.getBoundingClientRect();
+    const elementCenterX = elementBounds.left + elementBounds.width / 2;
+    const letterCenterOffsets = this.letters.map((letter) => {
+      const letterBounds = letter.getBoundingClientRect();
+      return letterBounds.left + letterBounds.width / 2 - elementCenterX;
+    });
+    const textWidth = elementBounds.width * MAX_LABEL_SCALE;
 
     this.element.style.fontWeight = previousFontWeight;
     this.element.style.letterSpacing = previousLetterSpacing;
     this.element.style.transform = previousTransform;
     this.element.style.visibility = previousVisibility;
+    this.letters.forEach((letter, index) => {
+      letter.style.transform = previousLetterTransforms[index];
+    });
 
     return {
       fontSize: Number.isFinite(fontSize) ? fontSize : 64,
+      letterCenterOffsets,
       textWidth,
     };
+  }
+
+  applyLetterCurvature(letterCenterOffsets, radiusPixels) {
+    if (
+      Math.abs(this.bend) < 0.0001 ||
+      !Number.isFinite(radiusPixels) ||
+      radiusPixels <= 0
+    ) {
+      this.letters.forEach((letter) => {
+        letter.style.transform = "none";
+      });
+      return;
+    }
+
+    const direction = this.bend > 0 ? 1 : -1;
+    const maximumVisualScale = MAX_LABEL_SCALE * LABEL_VISUAL_SCALE;
+
+    this.letters.forEach((letter, index) => {
+      const visualX = letterCenterOffsets[index] * maximumVisualScale;
+      const safeX = Math.max(
+        -radiusPixels * 0.95,
+        Math.min(visualX, radiusPixels * 0.95),
+      );
+      const localAngle = Math.asin(safeX / radiusPixels);
+      const localArc =
+        radiusPixels -
+        Math.sqrt(radiusPixels * radiusPixels - safeX * safeX);
+      const rotation = localAngle * direction * LABEL_CURVE_STRENGTH;
+      const translateY =
+        (localArc / maximumVisualScale) *
+        direction *
+        LABEL_CURVE_STRENGTH;
+
+      letter.style.transform = `translateY(${translateY}px) rotate(${rotation}rad)`;
+    });
   }
 
   update(scroll, direction) {
@@ -141,7 +201,8 @@ class Media {
       (this.positionY / this.viewport.height) * this.screen.height;
     const distance = Math.min(Math.abs(x) / H, 1);
     const focus = 1 - distance;
-    const scale = 0.42 + Math.pow(focus, 1.35) * 1.18;
+    const scale =
+      (0.42 + Math.pow(focus, 1.35) * 1.18) * LABEL_VISUAL_SCALE;
     const opacity = 0.035 + Math.pow(focus, 1.8) * 0.965;
 
     this.element.style.left = `${screenX}px`;
@@ -467,6 +528,7 @@ class App {
     const radius =
       (halfViewportWidth * halfViewportWidth + bendMagnitude * bendMagnitude) /
       (2 * bendMagnitude);
+    const radiusPixels = (radius / this.viewport.height) * this.screen.height;
     const worldPerPixel = this.viewport.width / this.screen.width;
     const measurements = this.medias.map((media) => media.measureMaximumTextWidth());
     const maximumFontSize = Math.max(...measurements.map(({ fontSize }) => fontSize));
@@ -479,6 +541,10 @@ class App {
       media.maximumTextWidthWorld = textArcLength;
       media.textAngleSpan = textArcLength / radius;
       media.angleSpan = media.textAngleSpan + minimumGapAngle;
+      media.applyLetterCurvature(
+        measurements[index].letterCenterOffsets,
+        radiusPixels,
+      );
     });
 
     let centerArcPosition = 0;

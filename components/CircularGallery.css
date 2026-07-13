@@ -122,6 +122,11 @@
   will-change: transform, opacity;
 }
 
+.circular-gallery__letter {
+  display: inline-block;
+  transform-origin: center 55%;
+}
+
 .circular-gallery__item:focus-visible {
   outline: 1px solid rgba(255, 255, 255, 0.72);
   outline-offset: 6px;
