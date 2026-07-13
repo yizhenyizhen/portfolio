@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { identityEntries } from "@/data/site/identity";
+import { identityHeaderEntries } from "@/data/site/identity";
 import styles from "./IdentityHeader.module.css";
 
 export function IdentityHeader() {
@@ -7,14 +7,15 @@ export function IdentityHeader() {
     <header className={styles.header}>
       <nav aria-label="Identity navigation">
         <ul className={styles.list}>
-          {identityEntries.map((identity) => (
-            <li key={identity.slug}>
+          {identityHeaderEntries.map((identity) => (
+            <li key={identity.key}>
               <Link
                 href={identity.href}
                 className={`${styles.link} ${
                   identity.type === "person" ? styles.primary : styles.secondary
                 }`}
               >
+                <span className={styles.marker} aria-hidden="true" />
                 {identity.title}
               </Link>
             </li>

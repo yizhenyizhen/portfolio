@@ -36,11 +36,35 @@ type CaretMetrics = {
   y: number;
 };
 
-const SEARCH_HEIGHT = 56;
 const SEARCH_MAX_WIDTH = 560;
-const SEARCH_SIDE_MARGIN = 24;
-const TEXT_INSET = 28;
-const TEXT_BASELINE_OFFSET = 5;
+const SEARCH_MIN_WIDTH = 280;
+
+function clampValue(minimum: number, value: number, maximum: number) {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
+function getResponsiveSearchMetrics(
+  screenWidth: number,
+  screenHeight: number,
+) {
+  const shortestSide = Math.min(screenWidth, screenHeight);
+  const sideMargin = clampValue(16, screenWidth * 0.05, 32);
+  const height = clampValue(48, shortestSide * 0.07, 60);
+  const preferredWidth = clampValue(
+    SEARCH_MIN_WIDTH,
+    screenWidth * 0.72,
+    SEARCH_MAX_WIDTH,
+  );
+
+  return {
+    caretHalfHeight: clampValue(8, height * 0.18, 11),
+    height,
+    sideMargin,
+    textBaselineOffset: clampValue(4, height * 0.09, 5.5),
+    textInset: clampValue(22, height * 0.48, 30),
+    width: Math.min(preferredWidth, Math.max(0, screenWidth - sideMargin * 2)),
+  };
+}
 
 function pointOnTopArc(
   centerX: number,
@@ -133,23 +157,28 @@ export function HomepageAISearch({
     x: 0,
     y: 0,
   });
+  const responsiveMetrics = getResponsiveSearchMetrics(
+    geometry?.screenWidth ?? 0,
+    geometry?.screenHeight ?? 0,
+  );
+  const {
+    caretHalfHeight,
+    height: searchHeight,
+    textBaselineOffset,
+    textInset,
+    width: searchWidth,
+  } = responsiveMetrics;
 
   const searchRadius = geometry
     ? geometry.ringRadiusPixels +
       geometry.screenHeight * searchOffsetFromRing
     : 1;
-  const searchWidth = geometry
-    ? Math.min(
-        SEARCH_MAX_WIDTH,
-        Math.max(0, geometry.screenWidth - SEARCH_SIDE_MARGIN * 2),
-      )
-    : 0;
   const halfAngle = geometry
     ? Math.asin(Math.min(searchWidth / (2 * searchRadius), 0.95))
     : 0;
-  const textRadius = Math.max(searchRadius - TEXT_BASELINE_OFFSET, 1);
+  const textRadius = Math.max(searchRadius - textBaselineOffset, 1);
   const textArcLength = textRadius * halfAngle * 2;
-  const availableTextLength = Math.max(textArcLength - TEXT_INSET * 2, 1);
+  const availableTextLength = Math.max(textArcLength - textInset * 2, 1);
 
   useLayoutEffect(() => {
     if (!geometry) return;
@@ -186,8 +215,8 @@ export function HomepageAISearch({
     }
 
     const caretDistance = Math.min(
-      Math.max(TEXT_INSET + caretTextLength - scrollLength, TEXT_INSET),
-      textArcLength - TEXT_INSET,
+      Math.max(textInset + caretTextLength - scrollLength, textInset),
+      textArcLength - textInset,
     );
     const angle = -halfAngle + caretDistance / textRadius;
     const point = pointOnTopArc(
@@ -221,6 +250,7 @@ export function HomepageAISearch({
     halfAngle,
     searchRadius,
     textArcLength,
+    textInset,
     textRadius,
     value,
   ]);
@@ -256,7 +286,7 @@ export function HomepageAISearch({
     geometry.circleCenterY,
     searchRadius,
     halfAngle,
-    SEARCH_HEIGHT,
+    searchHeight,
   );
   const textPath = createArcPath(
     geometry.circleCenterX,
@@ -295,14 +325,14 @@ export function HomepageAISearch({
               <text ref={textRef} className={styles.value} xmlSpace="preserve">
                 <textPath
                   href={`#${pathId}`}
-                  startOffset={TEXT_INSET - caretMetrics.scrollLength}
+                  startOffset={textInset - caretMetrics.scrollLength}
                 >
                   {value}
                 </textPath>
               </text>
             ) : (
               <text className={styles.placeholder} xmlSpace="preserve">
-                <textPath href={`#${pathId}`} startOffset={TEXT_INSET}>
+                <textPath href={`#${pathId}`} startOffset={textInset}>
                   {placeholder}
                 </textPath>
               </text>
@@ -313,8 +343,8 @@ export function HomepageAISearch({
                 className={styles.caret}
                 x1={caretMetrics.x}
                 x2={caretMetrics.x}
-                y1={caretMetrics.y - 10}
-                y2={caretMetrics.y + 10}
+                y1={caretMetrics.y - caretHalfHeight}
+                y2={caretMetrics.y + caretHalfHeight}
                 transform={`rotate(${caretMetrics.angle} ${caretMetrics.x} ${caretMetrics.y})`}
               />
             ) : null}
@@ -333,9 +363,9 @@ export function HomepageAISearch({
           spellCheck={false}
           style={{
             left: geometry.circleCenterX - searchWidth / 2,
-            top: searchApexY - SEARCH_HEIGHT / 2,
+            top: searchApexY - searchHeight / 2,
             width: searchWidth,
-            height: SEARCH_HEIGHT,
+            height: searchHeight,
           }}
           onChange={handleChange}
           onSelect={(event) => updateCaretIndex(event.currentTarget)}

@@ -30,6 +30,8 @@
 .circular-gallery__hint {
   --hint-anchor-x: 50%;
   --hint-anchor-y: 50%;
+  --hint-blur: clamp(3px, 0.3vw, 4px);
+  --hint-offset: clamp(3px, 0.3vw, 4px);
 
   position: absolute;
   inset: 0;
@@ -38,7 +40,7 @@
   height: 100%;
   overflow: hidden;
   pointer-events: none;
-  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-family: var(--font-sans-role);
 }
 
 .circular-gallery__hint,
@@ -62,12 +64,12 @@
 
 .circular-gallery__hint-scroll {
   fill: rgba(255, 255, 255, 0.52);
-  font-size: 11px;
+  font-size: var(--type-hint);
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: var(--tracking-hint);
   dominant-baseline: central;
   opacity: 0;
-  filter: blur(4px);
+  filter: blur(var(--hint-blur));
   transition:
     opacity 320ms ease-out,
     filter 320ms ease-out;
@@ -83,14 +85,14 @@
   left: var(--hint-anchor-x);
   top: var(--hint-anchor-y);
   color: rgba(255, 255, 255, 0.58);
-  font-size: 11px;
+  font-size: var(--type-hint);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.22em;
+  letter-spacing: var(--tracking-hint);
   white-space: nowrap;
   opacity: 0;
-  filter: blur(4px);
-  transform: translate(-50%, calc(-50% + 4px));
+  filter: blur(var(--hint-blur));
+  transform: translate(-50%, calc(-50% + var(--hint-offset)));
   transition:
     opacity 220ms ease-out,
     filter 220ms ease-out,

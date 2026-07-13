@@ -10,6 +10,7 @@ import { GlassRingTrack } from "./systems/ring/GlassRingTrack";
 const MAX_LABEL_SCALE = 1.6;
 const LABEL_VISUAL_SCALE = 0.9;
 const LABEL_CURVE_STRENGTH = 0.22;
+const LABEL_FONT_SIZE = "var(--type-ring-title-base)";
 const MAX_LABEL_FONT_WEIGHT = "700";
 const MAX_LABEL_LETTER_SPACING = "0.12em";
 const MINIMUM_GAP_FONT_RATIO = 0.75;
@@ -74,6 +75,7 @@ class Media {
     this.element.setAttribute("aria-label", this.text);
     this.element.style.color = this.textColor;
     this.element.style.font = this.font;
+    this.element.style.fontSize = LABEL_FONT_SIZE;
     this.letters = Array.from(this.text, (character) => {
       const letter = document.createElement("span");
       letter.className = "circular-gallery__letter";

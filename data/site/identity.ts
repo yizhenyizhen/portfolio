@@ -1,3 +1,4 @@
+import { createWorld } from "@/data/worlds/create";
 import type { WorldChapter } from "@/types/world";
 
 export type IdentitySlug = "about" | "zen-furniture" | "horizon";
@@ -16,6 +17,13 @@ export type IdentityEntry = {
     label: string;
     href: `https://${string}`;
   };
+};
+
+export type IdentityHeaderEntry = {
+  key: string;
+  title: string;
+  href: string;
+  type: IdentityType | "world-chapter";
 };
 
 export const identityEntries: IdentityEntry[] = [
@@ -187,3 +195,30 @@ export function getIdentityEntry(slug: IdentitySlug) {
 
   return entry;
 }
+
+const createPortfolioChapter = createWorld.chapters[1];
+
+if (!createPortfolioChapter) {
+  throw new Error("Create must expose its second registered chapter.");
+}
+
+function toHeaderEntry(identity: IdentityEntry): IdentityHeaderEntry {
+  return {
+    key: identity.slug,
+    title: identity.title,
+    href: identity.href,
+    type: identity.type,
+  };
+}
+
+export const identityHeaderEntries: IdentityHeaderEntry[] = [
+  toHeaderEntry(getIdentityEntry("about")),
+  {
+    key: `${createWorld.slug}:${createPortfolioChapter.slug}`,
+    title: createPortfolioChapter.name.toUpperCase(),
+    href: `/${createWorld.slug}#${createPortfolioChapter.slug}`,
+    type: "world-chapter",
+  },
+  toHeaderEntry(getIdentityEntry("zen-furniture")),
+  toHeaderEntry(getIdentityEntry("horizon")),
+];

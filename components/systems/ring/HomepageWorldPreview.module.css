@@ -3,7 +3,10 @@
   top: calc(50% + clamp(7.5rem, 14vh, 10rem));
   left: 50%;
   z-index: 3;
-  width: min(80vw, 24rem);
+  width: min(
+    calc(100vw - var(--space-page-inline) - var(--space-page-inline)),
+    26rem
+  );
   color: #ffffff;
   text-align: center;
   pointer-events: none;
@@ -14,7 +17,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(0.55rem, 1.4vh, 0.85rem);
+  gap: clamp(0.45rem, 1.4vh, 0.85rem);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -28,14 +31,18 @@
 }
 
 .item {
-  font-size: clamp(0.875rem, 1.3vw, 1rem);
+  max-width: 100%;
+  font-size: var(--type-preview);
   font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
+  line-height: var(--leading-compact);
+  letter-spacing: var(--tracking-preview);
+  white-space: nowrap;
 }
 
 .link {
   display: block;
+  width: fit-content;
+  max-width: 100%;
   margin: -0.3rem -0.75rem;
   padding: 0.3rem 0.75rem;
   color: inherit;
@@ -44,6 +51,12 @@
   cursor: pointer;
   pointer-events: auto;
   transition: opacity 160ms ease-out;
+}
+
+@media (max-width: 26.875rem) {
+  .preview {
+    top: calc(50% + clamp(6rem, 13vh, 7.5rem));
+  }
 }
 
 .link:hover,

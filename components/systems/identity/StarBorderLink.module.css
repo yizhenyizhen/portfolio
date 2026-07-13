@@ -1,22 +1,32 @@
 .link {
   position: fixed;
-  right: clamp(1.25rem, 3vw, 2.5rem);
-  bottom: clamp(1.25rem, 3vw, 2.5rem);
+  right: max(
+    var(--space-page-inline),
+    calc(env(safe-area-inset-right) + 0.75rem)
+  );
+  bottom: max(
+    var(--space-page-inline),
+    calc(env(safe-area-inset-bottom) + 0.75rem)
+  );
   z-index: var(--layer-overlay);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  min-height: 2.9rem;
-  padding: 0.8rem 1.1rem;
+  min-height: var(--touch-target);
+  max-width: calc(
+    100vw - var(--space-page-inline) - var(--space-page-inline)
+  );
+  padding: clamp(0.7rem, 1.5vw, 0.8rem) clamp(0.9rem, 2vw, 1.1rem);
   border: 1px solid rgba(255, 255, 255, 0.26);
   border-radius: 2px;
   color: var(--color-text-primary);
   background: transparent;
-  font-size: 0.68rem;
+  font-size: var(--type-button);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--tracking-hint);
+  white-space: nowrap;
   text-decoration: none;
   transition: border-color var(--motion-fast) ease-out;
 }

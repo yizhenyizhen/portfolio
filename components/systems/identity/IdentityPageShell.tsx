@@ -11,55 +11,61 @@ type IdentityPageShellProps = {
   identity: IdentityEntry;
 };
 
+const LONG_TITLE_CHARACTER_THRESHOLD = 14;
+
 export function IdentityPageShell({ identity }: IdentityPageShellProps) {
   const chapters = [...identity.chapters].sort((a, b) => a.order - b.order);
   const identityIndex = identityEntries.findIndex(
     (entry) => entry.slug === identity.slug,
   );
+  const titleClassName =
+    identity.title.length > LONG_TITLE_CHARACTER_THRESHOLD
+      ? "site-page__identity-title site-page__identity-title--long"
+      : "site-page__identity-title";
 
   return (
     <main
-      className={`min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)] ${
-        identity.externalAction ? "pb-32 sm:pb-36" : ""
+      className={`site-page ${
+        identity.externalAction ? "site-page--fixed-action" : ""
       }`}
     >
-      <div className="mx-auto w-full max-w-[88rem] px-5 sm:px-8 lg:px-12">
-        <header className="pb-20 pt-7 sm:pb-28 sm:pt-9 lg:pb-36">
-          <div className="flex items-center justify-between gap-6 border-b border-[var(--color-border-subtle)] pb-5">
+      <div className="site-page__frame">
+        <header className="site-page__header">
+          <div className="site-page__topbar">
             <Link
               href="/"
-              className="inline-flex min-h-11 items-center gap-2 text-xs tracking-[0.08em] text-[var(--color-text-secondary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--color-text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
+              className="site-page__back-link"
             >
               <span aria-hidden="true">&larr;</span>
               Back to home
             </Link>
-            <p className="font-mono text-[0.62rem] tracking-[0.18em] text-[var(--color-text-muted)]">
+            <p className="site-page__index">
               {String(identityIndex + 1).padStart(2, "0")} /{" "}
               {String(identityEntries.length).padStart(2, "0")}
             </p>
           </div>
 
-          <div className="mt-20 max-w-6xl sm:mt-28 lg:mt-36">
-            <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[var(--color-text-muted)]">
+          <div className="site-page__hero">
+            <p className="site-page__eyebrow">
               {identity.eyebrow}
             </p>
-            <h1 className="mt-6 max-w-6xl text-[clamp(3.25rem,9.5vw,8.5rem)] font-medium leading-[0.88] tracking-[-0.06em]">
+            <h1 className={titleClassName}>
               {identity.title}
             </h1>
-            <p className="mt-8 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base sm:leading-8">
+            <p className="site-page__lede">
               {identity.summary}
             </p>
           </div>
         </header>
 
-        <div className="grid items-start gap-x-16 md:grid-cols-[12rem_minmax(0,1fr)] lg:gap-x-24 xl:grid-cols-[14rem_minmax(0,1fr)]">
+        <div className="site-page__content-grid">
           <WorldSidebar
             key={identity.slug}
             chapters={chapters}
             worldLabel={identity.title}
           />
 
-          <div className="min-w-0">
+          <div className="site-page__content">
             {chapters.map((chapter, index) => (
               <WorldSection
                 key={chapter.slug}
@@ -70,25 +76,23 @@ export function IdentityPageShell({ identity }: IdentityPageShellProps) {
           </div>
         </div>
 
-        <footer className="border-t border-[var(--color-border-subtle)] py-14 sm:py-18 md:ml-[calc(12rem+4rem)] lg:ml-[calc(12rem+6rem)] lg:py-20 xl:ml-[calc(14rem+6rem)]">
+        <footer className="site-page__footer">
           <nav aria-label="Identity navigation">
-            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
-              Identity
-            </p>
-            <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-4 sm:gap-x-10">
+            <p className="site-page__footer-label">Identity</p>
+            <ul className="site-page__footer-list">
               {identityEntries.map((entry) => (
                 <li key={entry.slug}>
                   {entry.slug === identity.slug ? (
                     <span
                       aria-current="page"
-                      className="text-sm text-[var(--color-text-primary)]"
+                      className="site-page__footer-link"
                     >
                       {entry.title}
                     </span>
                   ) : (
                     <Link
                       href={entry.href}
-                      className="text-sm text-[var(--color-text-muted)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--color-text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
+                      className="site-page__footer-link"
                     >
                       {entry.title}
                     </Link>

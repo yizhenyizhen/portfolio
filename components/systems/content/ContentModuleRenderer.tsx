@@ -7,13 +7,13 @@ export function ContentModuleRenderer({ module }: { module: ContentModule }) {
       return (
         <Surface>
           <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
+            <p className="content-module__eyebrow">
               {module.eyebrow}
             </p>
-            <h2 className="text-xl font-medium text-[var(--color-text-primary)]">
+            <h2 className="content-module__title">
               {module.title}
             </h2>
-            <p className="text-sm leading-7 text-[var(--color-text-secondary)]">
+            <p className="content-module__body">
               {module.body}
             </p>
           </div>
@@ -23,13 +23,13 @@ export function ContentModuleRenderer({ module }: { module: ContentModule }) {
       return (
         <Surface>
           <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
+            <p className="content-module__eyebrow">
               {module.eyebrow}
             </p>
-            <h2 className="text-xl font-medium text-[var(--color-text-primary)]">
+            <h2 className="content-module__title">
               {module.title}
             </h2>
-            <ul className="space-y-3 text-sm leading-7 text-[var(--color-text-secondary)]">
+            <ul className="content-module__body space-y-3">
               {module.items.map((item) => (
                 <li key={item.slug}>
                   <span className="text-[var(--color-text-primary)]">{item.name}</span>
@@ -45,13 +45,13 @@ export function ContentModuleRenderer({ module }: { module: ContentModule }) {
       return (
         <Surface>
           <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
+            <p className="content-module__eyebrow">
               {module.eyebrow}
             </p>
-            <h2 className="text-xl font-medium text-[var(--color-text-primary)]">
+            <h2 className="content-module__title">
               {module.title}
             </h2>
-            <p className="text-sm leading-7 text-[var(--color-text-secondary)]">
+            <p className="content-module__body">
               {module.body}
             </p>
           </div>
