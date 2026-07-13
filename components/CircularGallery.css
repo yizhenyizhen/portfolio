@@ -101,7 +101,7 @@
   opacity: 1;
   filter: blur(0);
   transform: translate(-50%, -50%);
-  transition-duration: 650ms;
+  transition-duration: 400ms;
   transition-timing-function: ease-out;
 }
 

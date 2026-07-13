@@ -1,16 +1,34 @@
-import CircularGallery from "@/components/CircularGallery";
+import { HomepageRingExperience } from "@/components/systems/ring/HomepageRingExperience";
+import { worlds } from "@/data/site/worlds";
 import { getPrimaryNavigationItems } from "@/lib/navigation/get-navigation";
 
-export function CircularRingNavigation() {
-  const items = getPrimaryNavigationItems().map((item) => ({
+type CircularRingNavigationProps = {
+  initialWorld?: string;
+};
+
+export function CircularRingNavigation({
+  initialWorld,
+}: CircularRingNavigationProps) {
+  const navigation = getPrimaryNavigationItems();
+  const requestedIndex = navigation.findIndex(
+    (item) => item.slug === initialWorld,
+  );
+  const initialIndex = requestedIndex >= 0 ? requestedIndex : 0;
+  const items = navigation.map((item) => ({
+    slug: item.slug,
     text: item.label,
     href: item.href,
+    chapters: [...worlds[item.slug].chapters].sort(
+      (a, b) => a.order - b.order,
+    ),
   }));
 
   return (
     <div className="fixed inset-0 z-[var(--layer-content)] h-screen w-screen">
-      <CircularGallery
+      <HomepageRingExperience
+        key={initialIndex}
         items={items}
+        initialIndex={initialIndex}
         bend={7}
         textColor="#ffffff"
         font='600 64px "Helvetica Neue"'

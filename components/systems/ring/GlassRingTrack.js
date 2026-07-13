@@ -136,7 +136,14 @@ const fragment = `
 `;
 
 export class GlassRingTrack {
-  constructor({ gl, scene, screen, viewport, bend }) {
+  constructor({
+    gl,
+    scene,
+    screen,
+    viewport,
+    bend,
+    centerOffsetPixels = 0,
+  }) {
     this.gl = gl;
     this.scene = scene;
     this.bend = bend;
@@ -184,7 +191,7 @@ export class GlassRingTrack {
       program: this.program,
     });
     this.mesh.setParent(scene);
-    this.onResize({ screen, viewport });
+    this.onResize({ screen, viewport, centerOffsetPixels });
   }
 
   findSourceCanvas() {
@@ -233,7 +240,7 @@ export class GlassRingTrack {
     this.program.uniforms.uRotation.value = scroll / this.radiusWorld;
   }
 
-  onResize({ screen, viewport }) {
+  onResize({ screen, viewport, centerOffsetPixels = 0 }) {
     this.screen = screen;
     this.viewport = viewport;
     const halfViewportWidth = viewport.width / 2;
@@ -243,13 +250,17 @@ export class GlassRingTrack {
       (2 * bendMagnitude);
 
     const radius = this.radiusWorld / viewport.height;
+    const centerOffset = centerOffsetPixels / screen.height;
     const baseTrackHalfWidthPixels = Math.min(Math.max(screen.width * 0.045, 34), 68);
     const currentTrackHalfWidthPixels = baseTrackHalfWidthPixels * 1.2;
     const trackHalfWidthPixels = currentTrackHalfWidthPixels * 1.2;
 
     this.mesh.scale.set(viewport.width, viewport.height, 1);
     this.program.uniforms.uResolution.value = [screen.width, screen.height];
-    this.program.uniforms.uRingCenter.value = [0.5, 0.5 - radius];
+    this.program.uniforms.uRingCenter.value = [
+      0.5,
+      0.5 - radius - centerOffset,
+    ];
     this.program.uniforms.uAspect.value = screen.width / screen.height;
     this.program.uniforms.uRadius.value = radius;
     this.program.uniforms.uTrackHalfWidth.value = trackHalfWidthPixels / screen.height;

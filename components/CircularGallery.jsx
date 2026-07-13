@@ -11,7 +11,9 @@ const MAX_LABEL_SCALE = 1.6;
 const MAX_LABEL_FONT_WEIGHT = "700";
 const MAX_LABEL_LETTER_SPACING = "0.12em";
 const MINIMUM_GAP_FONT_RATIO = 0.75;
-const HINT_SETTLE_DURATION = 320;
+const SNAP_CONVERGENCE_MULTIPLIER = 1.18;
+const SNAP_CONVERGENCE_RANGE_RATIO = 0.25;
+const HINT_SETTLE_DURATION = 75;
 const HINT_POSITION_EPSILON_PIXELS = 0.25;
 const HINT_VELOCITY_EPSILON_PIXELS_PER_MS = 0.0025;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
@@ -39,6 +41,7 @@ class Media {
     text,
     viewport,
     bend,
+    centerOffsetPixels,
     textColor,
     font,
     href,
@@ -52,6 +55,7 @@ class Media {
     this.text = text;
     this.viewport = viewport;
     this.bend = bend;
+    this.centerOffsetPixels = centerOffsetPixels;
     this.textColor = textColor;
     this.font = font;
     this.href = href;
@@ -131,7 +135,10 @@ class Media {
     }
 
     const screenX = this.screen.width / 2 + (x / this.viewport.width) * this.screen.width;
-    const screenY = this.screen.height / 2 - (this.positionY / this.viewport.height) * this.screen.height;
+    const screenY =
+      this.screen.height / 2 +
+      this.centerOffsetPixels -
+      (this.positionY / this.viewport.height) * this.screen.height;
     const distance = Math.min(Math.abs(x) / H, 1);
     const focus = 1 - distance;
     const scale = 0.42 + Math.pow(focus, 1.35) * 1.18;
@@ -161,9 +168,12 @@ class Media {
     }
   }
 
-  onResize({ screen, viewport } = {}) {
+  onResize({ screen, viewport, centerOffsetPixels } = {}) {
     if (screen) this.screen = screen;
     if (viewport) this.viewport = viewport;
+    if (Number.isFinite(centerOffsetPixels)) {
+      this.centerOffsetPixels = centerOffsetPixels;
+    }
   }
 
   destroy() {
@@ -177,20 +187,31 @@ class App {
     container,
     {
       items,
+      initialIndex = 0,
       bend,
       textColor = "#ffffff",
       font = "600 64px sans-serif",
       scrollSpeed = 2,
       scrollEase = 0.05,
+      centerOffsetRatio = 0,
       onNavigate,
+      onActiveIndexChange,
+      onGeometryChange,
     } = {},
   ) {
     document.documentElement.classList.remove("no-js");
     this.destroyed = false;
     this.container = container;
     this.bend = bend;
+    this.centerOffsetRatio = Number.isFinite(centerOffsetRatio)
+      ? centerOffsetRatio
+      : 0;
     this.scrollSpeed = scrollSpeed;
     this.onNavigate = onNavigate;
+    this.onActiveIndexChange = onActiveIndexChange;
+    this.onGeometryChange = onGeometryChange;
+    this.activeIndex = null;
+    this.isSnapping = false;
     this.pointerTravel = 0;
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
     this.hasInteracted = false;
@@ -205,6 +226,7 @@ class App {
     this.onResize();
     this.createGlassTrack(bend);
     this.createMedias(items, bend, textColor, font);
+    this.setInitialIndex(initialIndex);
     this.createHint();
     this.remeasureWhenFontsReady();
     this.update();
@@ -241,6 +263,7 @@ class App {
       screen: this.screen,
       viewport: this.viewport,
       bend,
+      centerOffsetPixels: this.centerOffsetPixels,
     });
   }
 
@@ -257,6 +280,7 @@ class App {
         text: data.text,
         viewport: this.viewport,
         bend,
+        centerOffsetPixels: this.centerOffsetPixels,
         textColor,
         font,
         href: data.href,
@@ -317,6 +341,7 @@ class App {
 
   registerHintInteraction() {
     this.hasInteracted = true;
+    this.isSnapping = false;
     this.settleStartedAt = null;
     this.previousTargetDistance = Number.POSITIVE_INFINITY;
     this.setHintState("hidden");
@@ -381,13 +406,27 @@ class App {
     if (!this.hint || !this.hintSvg || !this.hintPath) return;
 
     const centerX = this.screen.width / 2;
-    const activeY = this.screen.height / 2;
+    const activeY = this.screen.height / 2 + this.centerOffsetPixels;
     const halfViewportWidth = this.viewport.width / 2;
     const bendMagnitude = Math.max(Math.abs(this.bend), 0.0001);
     const radiusWorld =
       (halfViewportWidth * halfViewportWidth + bendMagnitude * bendMagnitude) /
       (2 * bendMagnitude);
     const radiusPixels = (radiusWorld / this.viewport.height) * this.screen.height;
+    const curvesDown = this.bend > 0;
+    const circleCenterY =
+      Math.abs(this.bend) < 0.0001
+        ? activeY
+        : activeY + (curvesDown ? radiusPixels : -radiusPixels);
+
+    this.onGeometryChange?.({
+      bend: this.bend,
+      circleCenterX: centerX,
+      circleCenterY,
+      ringRadiusPixels: radiusPixels,
+      screenWidth: this.screen.width,
+      screenHeight: this.screen.height,
+    });
     const hintInset = Math.min(Math.max(radiusPixels * 0.07, 58), 82);
 
     this.hintSvg.setAttribute("viewBox", `0 0 ${this.screen.width} ${this.screen.height}`);
@@ -403,8 +442,6 @@ class App {
       return;
     }
 
-    const curvesDown = this.bend > 0;
-    const circleCenterY = activeY + (curvesDown ? radiusPixels : -radiusPixels);
     const hintRadius = curvesDown
       ? Math.max(radiusPixels - hintInset, 1)
       : radiusPixels + hintInset;
@@ -472,14 +509,66 @@ class App {
       .slice(0, this.uniqueItemCount)
       .map((media) => media.x);
     this.snapCycleLength = this.medias[this.uniqueItemCount]?.x ?? widthTotal;
+    const snapIntervals = this.snapPoints
+      .map((point, index) => {
+        const nextPoint =
+          this.snapPoints[index + 1] ??
+          this.snapCycleLength + this.snapPoints[0];
+        return nextPoint - point;
+      })
+      .filter((interval) => interval > 0);
+    this.snapConvergenceRange = snapIntervals.length
+      ? Math.min(...snapIntervals) * SNAP_CONVERGENCE_RANGE_RATIO
+      : 0;
   }
 
   remeasureWhenFontsReady() {
     document.fonts?.ready.then(() => {
       if (this.destroyed) return;
       this.layoutMedias();
-      this.scroll.target = this.getNearestSnapPoint(this.scroll.target);
+
+      if (this.hasInteracted) {
+        this.scroll.target = this.getNearestSnapPoint(this.scroll.target);
+      } else {
+        this.setInitialIndex(this.initialIndex);
+      }
     });
+  }
+
+  setInitialIndex(index) {
+    const isValidIndex =
+      Number.isInteger(index) && index >= 0 && index < this.uniqueItemCount;
+    const safeIndex = isValidIndex ? index : 0;
+    const initialPosition = this.snapPoints?.[safeIndex] ?? 0;
+
+    this.initialIndex = safeIndex;
+    this.scroll.current = initialPosition;
+    this.scroll.target = initialPosition;
+    this.scroll.last = initialPosition;
+    this.activeIndex = safeIndex;
+  }
+
+  updateActiveIndex() {
+    if (!this.medias?.length || !this.uniqueItemCount) return;
+
+    let closestMedia = this.medias[0];
+    let closestDistance = Math.abs(closestMedia.positionX);
+
+    for (let index = 1; index < this.medias.length; index += 1) {
+      const media = this.medias[index];
+      const distance = Math.abs(media.positionX);
+
+      if (distance < closestDistance) {
+        closestMedia = media;
+        closestDistance = distance;
+      }
+    }
+
+    const nextActiveIndex = closestMedia.index % this.uniqueItemCount;
+    if (nextActiveIndex === this.activeIndex) return;
+
+    this.activeIndex = nextActiveIndex;
+    this.onActiveIndexChange?.(nextActiveIndex);
   }
 
   getNearestSnapPoint(value) {
@@ -558,6 +647,7 @@ class App {
   }
 
   onCheck() {
+    this.isSnapping = true;
     this.settleStartedAt = null;
     this.previousTargetDistance = Number.POSITIVE_INFINITY;
     this.scroll.target = this.getNearestSnapPoint(this.scroll.target);
@@ -568,6 +658,7 @@ class App {
       width: this.container.clientWidth,
       height: this.container.clientHeight,
     };
+    this.centerOffsetPixels = this.screen.height * this.centerOffsetRatio;
     this.renderer.setSize(this.screen.width, this.screen.height);
     this.camera.perspective({ aspect: this.screen.width / this.screen.height });
 
@@ -586,21 +677,41 @@ class App {
 
     if (this.medias) {
       this.medias.forEach((media) =>
-        media.onResize({ screen: this.screen, viewport: this.viewport }),
+        media.onResize({
+          screen: this.screen,
+          viewport: this.viewport,
+          centerOffsetPixels: this.centerOffsetPixels,
+        }),
       );
       this.layoutMedias();
     }
 
-    this.glassRingTrack?.onResize({ screen: this.screen, viewport: this.viewport });
+    this.glassRingTrack?.onResize({
+      screen: this.screen,
+      viewport: this.viewport,
+      centerOffsetPixels: this.centerOffsetPixels,
+    });
     this.updateHintLayout();
   }
 
   update(time = performance.now()) {
-    this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
+    const isInFinalConvergence =
+      this.isSnapping &&
+      Math.abs(this.scroll.target - this.scroll.current) <=
+        this.snapConvergenceRange;
+    const convergenceEase = isInFinalConvergence
+      ? Math.min(this.scroll.ease * SNAP_CONVERGENCE_MULTIPLIER, 1)
+      : this.scroll.ease;
+    this.scroll.current = lerp(
+      this.scroll.current,
+      this.scroll.target,
+      convergenceEase,
+    );
     const direction = this.scroll.current > this.scroll.last ? "right" : "left";
 
     if (this.medias) {
       this.medias.forEach((media) => media.update(this.scroll, direction));
+      this.updateActiveIndex();
     }
 
     this.glassRingTrack?.update({ scroll: this.scroll.current, time });
@@ -656,11 +767,15 @@ class App {
 
 export default function CircularGallery({
   items,
+  initialIndex = 0,
   bend = 3,
   textColor = "#ffffff",
   font = "600 64px sans-serif",
   scrollSpeed = 2,
   scrollEase = 0.05,
+  centerOffsetRatio = 0,
+  onActiveIndexChange,
+  onGeometryChange,
 }) {
   const containerRef = useRef(null);
   const router = useRouter();
@@ -670,16 +785,32 @@ export default function CircularGallery({
 
     const app = new App(containerRef.current, {
       items,
+      initialIndex,
       bend,
       textColor,
       font,
       scrollSpeed,
       scrollEase,
+      centerOffsetRatio,
       onNavigate: (href) => router.push(href),
+      onActiveIndexChange,
+      onGeometryChange,
     });
 
     return () => app.destroy();
-  }, [items, bend, textColor, font, scrollSpeed, scrollEase, router]);
+  }, [
+    items,
+    initialIndex,
+    bend,
+    textColor,
+    font,
+    scrollSpeed,
+    scrollEase,
+    centerOffsetRatio,
+    router,
+    onActiveIndexChange,
+    onGeometryChange,
+  ]);
 
   return (
     <div

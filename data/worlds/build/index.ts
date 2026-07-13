@@ -9,41 +9,37 @@ export const buildWorld: WorldDefinition = {
     "Build is the world for AI, Horizon, research, products, and future ventures that express execution beyond personal interests.",
   chapters: [
     {
-      slug: "ai",
-      name: "AI",
-      summary: "Experiments, tools, and learning systems.",
-    },
-    {
       slug: "horizon",
       name: "Horizon",
-      summary: "A future-facing product chapter within the same world.",
-    },
-  ],
-  modules: [
-    {
-      id: "build-summary",
-      kind: "summary",
-      eyebrow: "World purpose",
-      title: "Building should show what the future is trying to become.",
-      body: "This registry can absorb startups, research, and product chapters without increasing top-level navigation complexity.",
+      summary: "A dedicated structure will document the project's direction, process, and future updates.",
+      status: "coming-soon",
+      order: 1,
+      contentTypes: ["Product direction", "Build log", "Updates"],
     },
     {
-      id: "build-chapters",
-      kind: "chapter-list",
-      eyebrow: "Planned chapters",
-      title: "Current starter set",
-      items: [
-        {
-          slug: "ai",
-          name: "AI",
-          summary: "Continuous learning and execution.",
-        },
-        {
-          slug: "horizon",
-          name: "Horizon",
-          summary: "A future brand or product system.",
-        },
-      ],
+      slug: "zen-furniture",
+      name: "Zen Furniture",
+      summary: "Brand studies, objects, and prototypes will share one evolving product record.",
+      status: "coming-soon",
+      order: 2,
+      contentTypes: ["Objects", "Brand studies", "Prototypes"],
+    },
+    {
+      slug: "ai-projects",
+      name: "AI Projects",
+      summary: "Experiments and product concepts will show how emerging tools become useful systems.",
+      status: "coming-soon",
+      order: 3,
+      contentTypes: ["Experiments", "Product concepts", "Build notes"],
+    },
+    {
+      slug: "future-products",
+      name: "Future Products",
+      summary: "Early ideas will remain visible without pretending unfinished work is complete.",
+      status: "coming-soon",
+      order: 4,
+      contentTypes: ["Early concepts", "Research questions", "Status notes"],
     },
   ],
+  modules: [],
 };

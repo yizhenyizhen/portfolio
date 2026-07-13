@@ -19,7 +19,7 @@ export function HomePageRingLayout() {
       </div>
 
       <div className="fixed inset-0 z-[var(--layer-content)] h-full w-full">
-        <RingNavigationBoundary items={navigation} activeSlug="create" />
+        <RingNavigationBoundary items={navigation} />
       </div>
     </main>
   );

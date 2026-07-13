@@ -1,0 +1,94 @@
+.link {
+  position: fixed;
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  bottom: clamp(1.25rem, 3vw, 2.5rem);
+  z-index: var(--layer-overlay);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 2.9rem;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 2px;
+  color: var(--color-text-primary);
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  transition: border-color var(--motion-fast) ease-out;
+}
+
+.topLight,
+.bottomLight {
+  position: absolute;
+  z-index: 0;
+  width: 300%;
+  height: 1px;
+  background: radial-gradient(circle, #ffffff, transparent 12%);
+  opacity: 0.62;
+  pointer-events: none;
+  animation-duration: 6s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.topLight {
+  top: 0;
+  left: -250%;
+  animation-name: move-top-light;
+}
+
+.bottomLight {
+  right: -250%;
+  bottom: 0;
+  animation-name: move-bottom-light;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.link:hover {
+  border-color: rgba(255, 255, 255, 0.46);
+}
+
+.link:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 4px;
+}
+
+@keyframes move-top-light {
+  from {
+    transform: translateX(0);
+    opacity: 0.62;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0.18;
+  }
+}
+
+@keyframes move-bottom-light {
+  from {
+    transform: translateX(0);
+    opacity: 0.62;
+  }
+
+  to {
+    transform: translateX(-100%);
+    opacity: 0.18;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topLight,
+  .bottomLight {
+    display: none;
+  }
+}

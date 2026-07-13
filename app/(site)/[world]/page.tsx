@@ -32,7 +32,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: definition.name,
+    title: definition.label,
     description: definition.description,
   };
 }
