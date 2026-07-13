@@ -1,2 +1,2 @@
-export * from "./HomeArchitecturePlaceholder";
+export * from "./HomePageRingLayout";
 export * from "./SiteShell";

@@ -1,0 +1,133 @@
+.circular-gallery {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  touch-action: none;
+}
+
+.circular-gallery__engine,
+.circular-gallery__labels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.circular-gallery__engine {
+  z-index: 0;
+  pointer-events: none;
+}
+
+.circular-gallery__labels {
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.circular-gallery__hint {
+  --hint-anchor-x: 50%;
+  --hint-anchor-y: 50%;
+
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.circular-gallery__hint,
+.circular-gallery__hint * {
+  pointer-events: none;
+}
+
+.circular-gallery__hint-arc {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.circular-gallery__hint-path {
+  fill: none;
+  stroke: none;
+}
+
+.circular-gallery__hint-scroll {
+  fill: rgba(255, 255, 255, 0.52);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  dominant-baseline: central;
+  opacity: 0;
+  filter: blur(4px);
+  transition:
+    opacity 320ms ease-out,
+    filter 320ms ease-out;
+}
+
+.circular-gallery__hint[data-hint-state="scroll"] .circular-gallery__hint-scroll {
+  opacity: 1;
+  filter: blur(0);
+}
+
+.circular-gallery__hint-enter {
+  position: absolute;
+  left: var(--hint-anchor-x);
+  top: var(--hint-anchor-y);
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+  opacity: 0;
+  filter: blur(4px);
+  transform: translate(-50%, calc(-50% + 4px));
+  transition:
+    opacity 220ms ease-out,
+    filter 220ms ease-out,
+    transform 220ms ease-out;
+}
+
+.circular-gallery__hint[data-hint-state="enter"] .circular-gallery__hint-enter {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate(-50%, -50%);
+  transition-duration: 650ms;
+  transition-timing-function: ease-out;
+}
+
+.circular-gallery__item {
+  appearance: none;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  transform-origin: center;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform, opacity;
+}
+
+.circular-gallery__item:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 6px;
+}
+
+.circular-gallery:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.72);
+  outline-offset: -8px;
+}
