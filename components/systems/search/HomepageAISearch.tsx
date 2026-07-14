@@ -12,9 +12,13 @@ import {
 import styles from "./HomepageAISearch.module.css";
 
 export type HomepageSearchGeometry = {
+  activeY: number;
   bend: number;
   circleCenterX: number;
   circleCenterY: number;
+  isMobileGeometry: boolean;
+  layoutMode: "desktop" | "mobile" | "compact-landscape";
+  radiusWorld: number;
   ringRadiusPixels: number;
   screenWidth: number;
   screenHeight: number;

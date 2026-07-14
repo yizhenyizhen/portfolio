@@ -19,6 +19,7 @@ const SNAP_CONVERGENCE_RANGE_RATIO = 0.25;
 const HINT_SETTLE_DURATION = 75;
 const HINT_POSITION_EPSILON_PIXELS = 0.25;
 const HINT_VELOCITY_EPSILON_PIXELS_PER_MS = 0.0025;
+const RESIZE_DIMENSION_EPSILON = 0.5;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 let hintPathSequence = 0;
@@ -35,6 +36,10 @@ function lerp(p1, p2, t) {
   return p1 + (p2 - p1) * t;
 }
 
+function clampValue(minimum, value, maximum) {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
 class Media {
   constructor({
     container,
@@ -44,6 +49,7 @@ class Media {
     text,
     viewport,
     bend,
+    radiusWorld,
     centerOffsetPixels,
     textColor,
     font,
@@ -58,6 +64,7 @@ class Media {
     this.text = text;
     this.viewport = viewport;
     this.bend = bend;
+    this.radiusWorld = radiusWorld;
     this.centerOffsetPixels = centerOffsetPixels;
     this.textColor = textColor;
     this.font = font;
@@ -180,8 +187,7 @@ class Media {
       this.positionY = 0;
       this.rotation = 0;
     } else {
-      const BAbs = Math.abs(this.bend);
-      const radius = (H * H + BAbs * BAbs) / (2 * BAbs);
+      const radius = this.radiusWorld;
       const effectiveX = Math.min(Math.abs(x), H);
       const signedX = Math.max(-H, Math.min(x, H));
       const arc = radius - Math.sqrt(radius * radius - effectiveX * effectiveX);
@@ -231,9 +237,11 @@ class Media {
     }
   }
 
-  onResize({ screen, viewport, centerOffsetPixels } = {}) {
+  onResize({ screen, viewport, bend, radiusWorld, centerOffsetPixels } = {}) {
     if (screen) this.screen = screen;
     if (viewport) this.viewport = viewport;
+    if (Number.isFinite(bend)) this.bend = bend;
+    if (Number.isFinite(radiusWorld)) this.radiusWorld = radiusWorld;
     if (Number.isFinite(centerOffsetPixels)) {
       this.centerOffsetPixels = centerOffsetPixels;
     }
@@ -257,6 +265,7 @@ class App {
       scrollSpeed = 2,
       scrollEase = 0.05,
       centerOffsetRatio = 0,
+      mobileLayout,
       onNavigate,
       onActiveIndexChange,
       onGeometryChange,
@@ -265,7 +274,9 @@ class App {
     document.documentElement.classList.remove("no-js");
     this.destroyed = false;
     this.container = container;
+    this.baseBend = bend;
     this.bend = bend;
+    this.mobileLayout = mobileLayout;
     this.centerOffsetRatio = Number.isFinite(centerOffsetRatio)
       ? centerOffsetRatio
       : 0;
@@ -287,8 +298,8 @@ class App {
     this.createCamera();
     this.createScene();
     this.onResize();
-    this.createGlassTrack(bend);
-    this.createMedias(items, bend, textColor, font);
+    this.createGlassTrack();
+    this.createMedias(items, this.bend, textColor, font);
     this.setInitialIndex(initialIndex);
     this.createHint();
     this.remeasureWhenFontsReady();
@@ -319,14 +330,13 @@ class App {
     this.scene = new Transform();
   }
 
-  createGlassTrack(bend) {
+  createGlassTrack() {
     this.glassRingTrack = new GlassRingTrack({
       gl: this.gl,
       scene: this.scene,
       screen: this.screen,
       viewport: this.viewport,
-      bend,
-      centerOffsetPixels: this.centerOffsetPixels,
+      ringGeometry: this.ringGeometry,
     });
   }
 
@@ -343,6 +353,7 @@ class App {
         text: data.text,
         viewport: this.viewport,
         bend,
+        radiusWorld: this.radiusWorld,
         centerOffsetPixels: this.centerOffsetPixels,
         textColor,
         font,
@@ -468,29 +479,31 @@ class App {
   updateHintLayout() {
     if (!this.hint || !this.hintSvg || !this.hintPath) return;
 
-    const centerX = this.screen.width / 2;
-    const activeY = this.screen.height / 2 + this.centerOffsetPixels;
-    const halfViewportWidth = this.viewport.width / 2;
-    const bendMagnitude = Math.max(Math.abs(this.bend), 0.0001);
-    const radiusWorld =
-      (halfViewportWidth * halfViewportWidth + bendMagnitude * bendMagnitude) /
-      (2 * bendMagnitude);
-    const radiusPixels = (radiusWorld / this.viewport.height) * this.screen.height;
+    const {
+      activeY,
+      circleCenterX: centerX,
+      circleCenterY,
+      layoutMode,
+      radiusPixels,
+    } = this.ringGeometry;
     const curvesDown = this.bend > 0;
-    const circleCenterY =
-      Math.abs(this.bend) < 0.0001
-        ? activeY
-        : activeY + (curvesDown ? radiusPixels : -radiusPixels);
 
     this.onGeometryChange?.({
       bend: this.bend,
+      activeY,
       circleCenterX: centerX,
       circleCenterY,
+      isMobileGeometry: layoutMode !== "desktop",
+      layoutMode,
+      radiusWorld: this.radiusWorld,
       ringRadiusPixels: radiusPixels,
       screenWidth: this.screen.width,
       screenHeight: this.screen.height,
     });
-    const hintInset = Math.min(Math.max(radiusPixels * 0.07, 58), 82);
+    const hintInset =
+      layoutMode === "compact-landscape"
+        ? clampValue(36, radiusPixels * 0.05, 48)
+        : clampValue(58, radiusPixels * 0.07, 82);
 
     this.hintSvg.setAttribute("viewBox", `0 0 ${this.screen.width} ${this.screen.height}`);
     this.hint.style.setProperty("--hint-anchor-x", `${centerX}px`);
@@ -525,12 +538,8 @@ class App {
   layoutMedias() {
     if (!this.medias?.length || this.screen.width === 0) return;
 
-    const halfViewportWidth = this.viewport.width / 2;
-    const bendMagnitude = Math.max(Math.abs(this.medias[0].bend), 0.0001);
-    const radius =
-      (halfViewportWidth * halfViewportWidth + bendMagnitude * bendMagnitude) /
-      (2 * bendMagnitude);
-    const radiusPixels = (radius / this.viewport.height) * this.screen.height;
+    const radius = this.radiusWorld;
+    const radiusPixels = this.ringGeometry.radiusPixels;
     const worldPerPixel = this.viewport.width / this.screen.width;
     const measurements = this.medias.map((media) => media.measureMaximumTextWidth());
     const maximumFontSize = Math.max(...measurements.map(({ fontSize }) => fontSize));
@@ -721,12 +730,107 @@ class App {
     this.scroll.target = this.getNearestSnapPoint(this.scroll.target);
   }
 
+  getLayoutMode(screen) {
+    if (!this.mobileLayout) return "desktop";
+
+    const isCompactLandscape =
+      screen.width > screen.height &&
+      screen.width <= this.mobileLayout.compactLandscapeMaxWidth &&
+      screen.height <= this.mobileLayout.compactLandscapeMaxHeight;
+
+    if (isCompactLandscape) return "compact-landscape";
+    return screen.width <= this.mobileLayout.maxWidth ? "mobile" : "desktop";
+  }
+
+  calculateRingGeometry() {
+    const halfViewportWidth = this.viewport.width / 2;
+    const bendMagnitude = Math.max(Math.abs(this.baseBend), 0.0001);
+    const layoutMode = this.getLayoutMode(this.screen);
+    let bend = this.baseBend;
+    let centerOffsetRatio = this.centerOffsetRatio;
+    let radiusWorld =
+      (halfViewportWidth * halfViewportWidth + bendMagnitude * bendMagnitude) /
+      (2 * bendMagnitude);
+
+    if (layoutMode !== "desktop") {
+      const minimumRadius = this.screen.width * this.mobileLayout.radiusMinWidthRatio;
+      const preferredRadius = this.screen.height * this.mobileLayout.radiusHeightRatio;
+      const maximumRadius = this.screen.width * this.mobileLayout.radiusMaxWidthRatio;
+      const radiusPixels = clampValue(minimumRadius, preferredRadius, maximumRadius);
+      const worldPerPixel = this.viewport.height / Math.max(this.screen.height, 1);
+      radiusWorld = Math.max(
+        radiusPixels * worldPerPixel,
+        halfViewportWidth + 0.0001,
+      );
+      // Invert the circle sagitta formula instead of scaling the rendered arc.
+      const sagitta =
+        radiusWorld -
+        Math.sqrt(
+          Math.max(
+            radiusWorld * radiusWorld - halfViewportWidth * halfViewportWidth,
+            0,
+          ),
+        );
+      bend = (this.baseBend < 0 ? -1 : 1) * sagitta;
+      centerOffsetRatio =
+        layoutMode === "compact-landscape"
+          ? this.mobileLayout.compactLandscape.ringCenterOffset
+          : this.mobileLayout.ringCenterOffset;
+    }
+
+    const centerOffsetPixels = this.screen.height * centerOffsetRatio;
+    const radiusPixels = (radiusWorld / this.viewport.height) * this.screen.height;
+    const activeY = this.screen.height / 2 + centerOffsetPixels;
+    const curvesDown = bend > 0;
+    const circleCenterX = this.screen.width / 2;
+    const circleCenterY =
+      Math.abs(bend) < 0.0001
+        ? activeY
+        : activeY + (curvesDown ? radiusPixels : -radiusPixels);
+    const ringCenterUv = [
+      circleCenterX / this.screen.width,
+      layoutMode === "desktop"
+        ? 0.5 -
+          radiusWorld / this.viewport.height -
+          centerOffsetPixels / this.screen.height
+        : 1 - circleCenterY / this.screen.height,
+    ];
+
+    return {
+      activeY,
+      bend,
+      centerOffsetPixels,
+      circleCenterX,
+      circleCenterY,
+      layoutMode,
+      radiusPixels,
+      radiusWorld,
+      ringCenterUv,
+    };
+  }
+
+  scheduleResize() {
+    if (this.resizeRaf !== undefined) return;
+
+    this.resizeRaf = window.requestAnimationFrame(() => {
+      this.resizeRaf = undefined;
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+      const sizeIsUnchanged =
+        this.screen &&
+        Math.abs(width - this.screen.width) < RESIZE_DIMENSION_EPSILON &&
+        Math.abs(height - this.screen.height) < RESIZE_DIMENSION_EPSILON;
+
+      if (sizeIsUnchanged) return;
+      this.onResize();
+    });
+  }
+
   onResize() {
     this.screen = {
       width: this.container.clientWidth,
       height: this.container.clientHeight,
     };
-    this.centerOffsetPixels = this.screen.height * this.centerOffsetRatio;
     this.renderer.setSize(this.screen.width, this.screen.height);
     this.camera.perspective({ aspect: this.screen.width / this.screen.height });
 
@@ -734,6 +838,10 @@ class App {
     const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
     const width = height * this.camera.aspect;
     this.viewport = { width, height };
+    this.ringGeometry = this.calculateRingGeometry();
+    this.bend = this.ringGeometry.bend;
+    this.radiusWorld = this.ringGeometry.radiusWorld;
+    this.centerOffsetPixels = this.ringGeometry.centerOffsetPixels;
 
     if (!this.labels) {
       this.labels = document.createElement("div");
@@ -748,6 +856,8 @@ class App {
         media.onResize({
           screen: this.screen,
           viewport: this.viewport,
+          bend: this.bend,
+          radiusWorld: this.radiusWorld,
           centerOffsetPixels: this.centerOffsetPixels,
         }),
       );
@@ -757,7 +867,7 @@ class App {
     this.glassRingTrack?.onResize({
       screen: this.screen,
       viewport: this.viewport,
-      centerOffsetPixels: this.centerOffsetPixels,
+      ringGeometry: this.ringGeometry,
     });
     this.updateHintLayout();
   }
@@ -790,7 +900,8 @@ class App {
   }
 
   addEventListeners() {
-    this.boundOnResize = this.onResize.bind(this);
+    this.boundOnResize = this.scheduleResize.bind(this);
+    this.boundOnOrientationChange = this.scheduleResize.bind(this);
     this.boundOnWheel = this.onWheel.bind(this);
     this.boundOnTouchDown = this.onTouchDown.bind(this);
     this.boundOnTouchMove = this.onTouchMove.bind(this);
@@ -798,6 +909,9 @@ class App {
     this.boundOnKeyDown = this.onKeyDown.bind(this);
 
     window.addEventListener("resize", this.boundOnResize);
+    window.addEventListener("orientationchange", this.boundOnOrientationChange);
+    this.visualViewport = window.visualViewport;
+    this.visualViewport?.addEventListener("resize", this.boundOnResize);
     window.addEventListener("mousewheel", this.boundOnWheel);
     window.addEventListener("wheel", this.boundOnWheel);
     window.addEventListener("mousedown", this.boundOnTouchDown);
@@ -812,7 +926,12 @@ class App {
   destroy() {
     this.destroyed = true;
     window.cancelAnimationFrame(this.raf);
+    if (this.resizeRaf !== undefined) {
+      window.cancelAnimationFrame(this.resizeRaf);
+    }
     window.removeEventListener("resize", this.boundOnResize);
+    window.removeEventListener("orientationchange", this.boundOnOrientationChange);
+    this.visualViewport?.removeEventListener("resize", this.boundOnResize);
     window.removeEventListener("mousewheel", this.boundOnWheel);
     window.removeEventListener("wheel", this.boundOnWheel);
     window.removeEventListener("mousedown", this.boundOnTouchDown);
@@ -842,6 +961,7 @@ export default function CircularGallery({
   scrollSpeed = 2,
   scrollEase = 0.05,
   centerOffsetRatio = 0,
+  mobileLayout,
   onActiveIndexChange,
   onGeometryChange,
 }) {
@@ -860,6 +980,7 @@ export default function CircularGallery({
       scrollSpeed,
       scrollEase,
       centerOffsetRatio,
+      mobileLayout,
       onNavigate: (href) => router.push(href),
       onActiveIndexChange,
       onGeometryChange,
@@ -875,6 +996,7 @@ export default function CircularGallery({
     scrollSpeed,
     scrollEase,
     centerOffsetRatio,
+    mobileLayout,
     router,
     onActiveIndexChange,
     onGeometryChange,

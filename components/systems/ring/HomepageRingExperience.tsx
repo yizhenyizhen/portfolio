@@ -27,6 +27,10 @@ type HomepageRingExperienceProps = {
   scrollEase: number;
 };
 
+function clampValue(minimum: number, value: number, maximum: number) {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
 export function HomepageRingExperience({
   items,
   initialIndex,
@@ -42,6 +46,38 @@ export function HomepageRingExperience({
     useState<HomepageSearchGeometry | null>(null);
   const activeWorld = items[activeIndex] ?? items[0];
   const previewOffset = `${homepageSearchConfig.ringCenterOffset * 100}vh`;
+  const layoutMode = ringGeometry?.layoutMode ?? "desktop";
+  const isMobileGeometry = ringGeometry?.isMobileGeometry ?? false;
+  const mobileLayout = homepageSearchConfig.mobileLayout;
+  const activeMobileLayout =
+    layoutMode === "compact-landscape"
+      ? mobileLayout.compactLandscape
+      : mobileLayout;
+  const mobileLayoutMode: "mobile" | "compact-landscape" =
+    layoutMode === "compact-landscape" ? "compact-landscape" : "mobile";
+  const effectiveSearchOffset = isMobileGeometry
+    ? activeMobileLayout.searchOffsetFromRing
+    : homepageSearchConfig.searchOffsetFromRing;
+  const previewMobileLayout =
+    ringGeometry && isMobileGeometry
+      ? {
+          anchorY:
+            ringGeometry.activeY +
+            clampValue(
+              activeMobileLayout.previewOffsetMin,
+              ringGeometry.screenHeight *
+                activeMobileLayout.previewOffsetHeightRatio,
+              activeMobileLayout.previewOffsetMax,
+            ),
+          bottomGutter: clampValue(
+            activeMobileLayout.previewBottomGutterMin,
+            ringGeometry.screenHeight *
+              activeMobileLayout.previewBottomGutterHeightRatio,
+            activeMobileLayout.previewBottomGutterMax,
+          ),
+          layoutMode: mobileLayoutMode,
+        }
+      : null;
 
   const handleSearchSubmit = (value: string) => {
     console.log(value);
@@ -58,6 +94,7 @@ export function HomepageRingExperience({
         scrollSpeed={scrollSpeed}
         scrollEase={scrollEase}
         centerOffsetRatio={homepageSearchConfig.ringCenterOffset}
+        mobileLayout={mobileLayout}
         onActiveIndexChange={setActiveIndex}
         onGeometryChange={setRingGeometry}
       />
@@ -65,12 +102,17 @@ export function HomepageRingExperience({
       {activeWorld ? (
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ transform: `translateY(${previewOffset})` }}
+          style={
+            previewMobileLayout
+              ? undefined
+              : { transform: `translateY(${previewOffset})` }
+          }
         >
           <HomepageWorldPreview
             worldSlug={activeWorld.slug}
             worldLabel={activeWorld.text}
             chapters={activeWorld.chapters}
+            mobileLayout={previewMobileLayout}
           />
         </div>
       ) : null}
@@ -81,7 +123,7 @@ export function HomepageRingExperience({
         onSubmit={handleSearchSubmit}
         geometry={ringGeometry}
         placeholder={homepageSearchConfig.placeholder}
-        searchOffsetFromRing={homepageSearchConfig.searchOffsetFromRing}
+        searchOffsetFromRing={effectiveSearchOffset}
       />
     </div>
   );

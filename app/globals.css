@@ -182,6 +182,17 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.homepage-viewport {
+  height: 100vh;
+}
+
+@media (max-width: 48rem),
+  (max-width: 59.375rem) and (max-height: 31.25rem) {
+  .homepage-viewport {
+    height: 100dvh;
+  }
+}
+
 .type-display {
   font-size: var(--type-display);
   line-height: var(--leading-display);

@@ -1,6 +1,13 @@
+import type { Viewport } from "next";
 import { DitherBackground } from "@/components/systems/background/DitherBackground";
 import { IdentityHeader } from "@/components/systems/identity";
 import { CircularRingNavigation } from "@/components/systems/ring/CircularRingNavigation";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -13,7 +20,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const initialWorld = Array.isArray(world) ? world[0] : world;
 
   return (
-    <main className="h-screen w-screen overflow-hidden">
+    <main className="homepage-viewport w-screen overflow-hidden">
       <DitherBackground />
       <CircularRingNavigation initialWorld={initialWorld} />
       <IdentityHeader />

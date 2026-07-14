@@ -4,7 +4,7 @@ import Dither from "@/components/Dither";
 
 export function DitherBackground() {
   return (
-    <div className="fixed inset-0 h-screen w-screen">
+    <div className="homepage-viewport fixed inset-0 w-screen">
       <Dither
         waveColor={[1, 1, 1]}
         disableAnimation={false}

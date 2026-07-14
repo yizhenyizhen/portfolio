@@ -59,6 +59,38 @@
   }
 }
 
+.preview[data-layout-mode="mobile"],
+.preview[data-layout-mode="compact-landscape"] {
+  top: min(
+    var(--preview-mobile-anchor-y),
+    calc(
+      100% - env(safe-area-inset-bottom, 0px) -
+        var(--preview-mobile-bottom-gutter) -
+        var(--preview-measured-height, 6rem)
+    )
+  );
+  width: min(
+    calc(
+      100vw -
+        max(var(--space-page-inline), env(safe-area-inset-left, 0px)) -
+        max(var(--space-page-inline), env(safe-area-inset-right, 0px))
+    ),
+    26rem
+  );
+}
+
+.preview[data-layout-mode="mobile"] .list {
+  gap: clamp(0.35rem, 1dvh, 0.65rem);
+}
+
+.preview[data-layout-mode="compact-landscape"] .list {
+  gap: clamp(0.25rem, 1dvh, 0.4rem);
+}
+
+.preview[data-layout-mode="compact-landscape"] .item {
+  font-size: clamp(0.6875rem, 1.5vw, 0.8125rem);
+}
+
 .link:hover,
 .link:focus-visible {
   opacity: 1;

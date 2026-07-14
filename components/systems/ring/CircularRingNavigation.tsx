@@ -24,7 +24,7 @@ export function CircularRingNavigation({
   }));
 
   return (
-    <div className="fixed inset-0 z-[var(--layer-content)] h-screen w-screen">
+    <div className="homepage-viewport fixed inset-0 z-[var(--layer-content)] w-screen">
       <HomepageRingExperience
         key={initialIndex}
         items={items}
