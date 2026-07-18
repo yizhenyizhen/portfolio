@@ -28,9 +28,11 @@ type HomepageAISearchProps = {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (value: string) => void;
+  onActivate: () => void;
   geometry: HomepageSearchGeometry | null;
   placeholder: string;
   searchOffsetFromRing: number;
+  workspaceActive: boolean;
 };
 
 type CaretMetrics = {
@@ -42,6 +44,7 @@ type CaretMetrics = {
 
 const SEARCH_MAX_WIDTH = 560;
 const SEARCH_MIN_WIDTH = 280;
+const SEARCH_CORNER_RADIUS_RATIO = 0.24;
 
 function clampValue(minimum: number, value: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -103,6 +106,15 @@ function createBandPath(
 ) {
   const outerRadius = radius + height / 2;
   const innerRadius = radius - height / 2;
+  const cornerRadius = height * SEARCH_CORNER_RADIUS_RATIO;
+  const outerCornerAngle = Math.min(
+    cornerRadius / outerRadius,
+    halfAngle * 0.4,
+  );
+  const innerCornerAngle = Math.min(
+    cornerRadius / innerRadius,
+    halfAngle * 0.4,
+  );
   const outerStart = pointOnTopArc(
     centerX,
     centerY,
@@ -127,12 +139,65 @@ function createBandPath(
     innerRadius,
     -halfAngle,
   );
+  const outerArcStart = pointOnTopArc(
+    centerX,
+    centerY,
+    outerRadius,
+    -halfAngle + outerCornerAngle,
+  );
+  const outerArcEnd = pointOnTopArc(
+    centerX,
+    centerY,
+    outerRadius,
+    halfAngle - outerCornerAngle,
+  );
+  const innerArcEnd = pointOnTopArc(
+    centerX,
+    centerY,
+    innerRadius,
+    halfAngle - innerCornerAngle,
+  );
+  const innerArcStart = pointOnTopArc(
+    centerX,
+    centerY,
+    innerRadius,
+    -halfAngle + innerCornerAngle,
+  );
+  const rightOuterSide = pointOnTopArc(
+    centerX,
+    centerY,
+    outerRadius - cornerRadius,
+    halfAngle,
+  );
+  const rightInnerSide = pointOnTopArc(
+    centerX,
+    centerY,
+    innerRadius + cornerRadius,
+    halfAngle,
+  );
+  const leftInnerSide = pointOnTopArc(
+    centerX,
+    centerY,
+    innerRadius + cornerRadius,
+    -halfAngle,
+  );
+  const leftOuterSide = pointOnTopArc(
+    centerX,
+    centerY,
+    outerRadius - cornerRadius,
+    -halfAngle,
+  );
 
   return [
-    `M ${outerStart.x} ${outerStart.y}`,
-    `A ${outerRadius} ${outerRadius} 0 0 1 ${outerEnd.x} ${outerEnd.y}`,
-    `L ${innerEnd.x} ${innerEnd.y}`,
-    `A ${innerRadius} ${innerRadius} 0 0 0 ${innerStart.x} ${innerStart.y}`,
+    `M ${outerArcStart.x} ${outerArcStart.y}`,
+    `A ${outerRadius} ${outerRadius} 0 0 1 ${outerArcEnd.x} ${outerArcEnd.y}`,
+    `Q ${outerEnd.x} ${outerEnd.y} ${rightOuterSide.x} ${rightOuterSide.y}`,
+    `L ${rightInnerSide.x} ${rightInnerSide.y}`,
+    `Q ${innerEnd.x} ${innerEnd.y} ${innerArcEnd.x} ${innerArcEnd.y}`,
+    `A ${innerRadius} ${innerRadius} 0 0 0 ${innerArcStart.x} ${innerArcStart.y}`,
+    `Q ${innerStart.x} ${innerStart.y} ${leftInnerSide.x} ${leftInnerSide.y}`,
+    `L ${leftOuterSide.x} ${leftOuterSide.y}`,
+    `Q ${outerStart.x} ${outerStart.y} ${outerArcStart.x} ${outerArcStart.y}`,
     "Z",
   ].join(" ");
 }
@@ -145,9 +210,11 @@ export function HomepageAISearch({
   value,
   onChange,
   onSubmit,
+  onActivate,
   geometry,
   placeholder,
   searchOffsetFromRing,
+  workspaceActive,
 }: HomepageAISearchProps) {
   const pathId = `homepage-search-path-${useId().replaceAll(":", "")}`;
   const clipId = `homepage-search-clip-${useId().replaceAll(":", "")}`;
@@ -275,7 +342,10 @@ export function HomepageAISearch({
 
   if (!geometry) {
     return (
-      <div className={styles.system}>
+      <div
+        className={styles.system}
+        data-workspace-hidden={workspaceActive ? "true" : "false"}
+      >
         <div
           className={styles.conversationPanel}
           data-homepage-ai-conversation-panel=""
@@ -301,7 +371,10 @@ export function HomepageAISearch({
   const searchApexY = geometry.circleCenterY - searchRadius;
 
   return (
-    <div className={styles.system}>
+    <div
+      className={styles.system}
+      data-workspace-hidden={workspaceActive ? "true" : "false"}
+    >
       <form
         className={styles.form}
         data-focused={focused ? "true" : "false"}
@@ -374,6 +447,7 @@ export function HomepageAISearch({
           onChange={handleChange}
           onSelect={(event) => updateCaretIndex(event.currentTarget)}
           onKeyUp={(event) => updateCaretIndex(event.currentTarget)}
+          onClick={onActivate}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />

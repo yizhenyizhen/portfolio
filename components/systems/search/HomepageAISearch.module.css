@@ -3,7 +3,20 @@
   inset: 0;
   z-index: 4;
   overflow: hidden;
+  opacity: 1;
+  visibility: visible;
   pointer-events: none;
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s linear 0s;
+}
+
+.system[data-workspace-hidden="true"] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 220ms ease-out,
+    visibility 0s linear 220ms;
 }
 
 .form,
@@ -25,15 +38,35 @@
 }
 
 .surface {
-  fill: #000000;
-  stroke: rgba(255, 255, 255, 0.34);
+  fill: rgba(0, 0, 0, 0.18);
+  stroke: rgba(255, 255, 255, 0.2);
   stroke-width: 1px;
   stroke-linejoin: round;
-  transition: stroke 180ms ease-out;
+  -webkit-backdrop-filter: blur(10px) saturate(108%);
+  backdrop-filter: blur(10px) saturate(108%);
+  filter:
+    drop-shadow(0 -0.75px 0 rgba(255, 255, 255, 0.09))
+    drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
+  transition:
+    fill 180ms ease-out,
+    stroke 180ms ease-out,
+    filter 180ms ease-out;
+}
+
+.form:hover .surface {
+  fill: rgba(0, 0, 0, 0.2);
+  stroke: rgba(255, 255, 255, 0.23);
+  filter:
+    drop-shadow(0 -0.75px 0 rgba(255, 255, 255, 0.12))
+    drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
 }
 
 .form[data-focused="true"] .surface {
-  stroke: rgba(255, 255, 255, 0.68);
+  fill: rgba(0, 0, 0, 0.2);
+  stroke: rgba(255, 255, 255, 0.24);
+  filter:
+    drop-shadow(0 -0.75px 0 rgba(255, 255, 255, 0.14))
+    drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
 }
 
 .value,
@@ -45,11 +78,11 @@
 }
 
 .value {
-  fill: rgba(255, 255, 255, 0.94);
+  fill: #ffffff;
 }
 
 .placeholder {
-  fill: rgba(255, 255, 255, 0.58);
+  fill: rgba(255, 255, 255, 0.98);
 }
 
 .caret {
@@ -101,6 +134,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .system {
+    transition-duration: 0.01ms;
+  }
+
   .surface {
     transition-duration: 0.01ms;
   }

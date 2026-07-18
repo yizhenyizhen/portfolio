@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import CircularGallery from "@/components/CircularGallery";
+import {
+  AIOverlay,
+  type AIWorkspacePhase,
+} from "@/components/systems/ai";
 import { HomepageWorldPreview } from "@/components/systems/ring/HomepageWorldPreview";
 import {
   HomepageAISearch,
@@ -42,6 +46,8 @@ export function HomepageRingExperience({
 }: HomepageRingExperienceProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [searchValue, setSearchValue] = useState("");
+  const [workspacePhase, setWorkspacePhase] =
+    useState<AIWorkspacePhase>("closed");
   const [ringGeometry, setRingGeometry] =
     useState<HomepageSearchGeometry | null>(null);
   const activeWorld = items[activeIndex] ?? items[0];
@@ -79,9 +85,31 @@ export function HomepageRingExperience({
         }
       : null;
 
-  const handleSearchSubmit = (value: string) => {
-    console.log(value);
-  };
+  const workspaceActive = workspacePhase !== "closed";
+
+  const openWorkspace = useCallback(() => {
+    setWorkspacePhase("open");
+  }, []);
+
+  const closeWorkspace = useCallback(() => {
+    setWorkspacePhase((currentPhase) =>
+      currentPhase === "open" ? "closing" : currentPhase,
+    );
+  }, []);
+
+  const completeWorkspaceExit = useCallback(() => {
+    setWorkspacePhase((currentPhase) =>
+      currentPhase === "closing" ? "closed" : currentPhase,
+    );
+  }, []);
+
+  const handleSearchSubmit = useCallback(
+    (value: string) => {
+      console.log(value);
+      openWorkspace();
+    },
+    [openWorkspace],
+  );
 
   return (
     <div className="relative h-full w-full">
@@ -121,9 +149,17 @@ export function HomepageRingExperience({
         value={searchValue}
         onChange={setSearchValue}
         onSubmit={handleSearchSubmit}
+        onActivate={openWorkspace}
         geometry={ringGeometry}
         placeholder={homepageSearchConfig.placeholder}
         searchOffsetFromRing={effectiveSearchOffset}
+        workspaceActive={workspaceActive}
+      />
+
+      <AIOverlay
+        phase={workspacePhase}
+        onRequestClose={closeWorkspace}
+        onExitComplete={completeWorkspaceExit}
       />
     </div>
   );
