@@ -24,6 +24,8 @@ export type IdentityHeaderEntry = {
   title: string;
   href: string;
   type: IdentityType | "world-chapter";
+  external?: boolean;
+  ariaLabel?: string;
 };
 
 export const identityEntries: IdentityEntry[] = [
@@ -219,6 +221,11 @@ export const identityHeaderEntries: IdentityHeaderEntry[] = [
     href: `/${createWorld.slug}#${createPortfolioChapter.slug}`,
     type: "world-chapter",
   },
-  toHeaderEntry(getIdentityEntry("zen-furniture")),
+  {
+    ...toHeaderEntry(getIdentityEntry("zen-furniture")),
+    href: "https://zenfurniture.uk",
+    external: true,
+    ariaLabel: "Visit Zen Furniture",
+  },
   toHeaderEntry(getIdentityEntry("horizon")),
 ];
