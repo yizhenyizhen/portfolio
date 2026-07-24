@@ -19,6 +19,7 @@ export type WorldChapter = {
   status: WorldChapterStatus;
   order: number;
   contentTypes: string[];
+  experience?: "room-key-dome";
 };
 
 export type WorldDefinition = {

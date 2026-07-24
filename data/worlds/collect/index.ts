@@ -15,6 +15,7 @@ export const collectWorld: WorldDefinition = {
       status: "coming-soon",
       order: 1,
       contentTypes: ["Key archive", "Place notes", "Collection records"],
+      experience: "room-key-dome",
     },
     {
       slug: "running",

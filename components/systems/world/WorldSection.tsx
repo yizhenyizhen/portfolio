@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { WorldChapter } from "@/types/world";
 
 const STATUS_LABELS: Record<WorldChapter["status"], string> = {
@@ -8,9 +9,14 @@ const STATUS_LABELS: Record<WorldChapter["status"], string> = {
 type WorldSectionProps = {
   chapter: WorldChapter;
   index: number;
+  children?: ReactNode;
 };
 
-export function WorldSection({ chapter, index }: WorldSectionProps) {
+export function WorldSection({
+  chapter,
+  index,
+  children,
+}: WorldSectionProps) {
   return (
     <section
       id={chapter.slug}
@@ -49,6 +55,7 @@ export function WorldSection({ chapter, index }: WorldSectionProps) {
           ))}
         </ol>
       </div>
+      {children}
     </section>
   );
 }

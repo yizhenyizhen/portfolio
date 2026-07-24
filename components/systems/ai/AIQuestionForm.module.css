@@ -1,0 +1,122 @@
+.form {
+  display: grid;
+  width: 100%;
+  gap: 0.65rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.inputFrame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.72rem 0.82rem 0.72rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 0.75rem;
+  background: rgba(7, 8, 9, 0.45);
+  -webkit-backdrop-filter: blur(12px) saturate(90%);
+  backdrop-filter: blur(12px) saturate(90%);
+  transition:
+    border-color 180ms ease-out,
+    background 180ms ease-out;
+}
+
+.inputFrame:focus-within {
+  border-color: rgba(255, 255, 255, 0.44);
+  background: rgba(7, 8, 9, 0.57);
+}
+
+.input {
+  width: 100%;
+  min-height: 1.75rem;
+  max-height: 9rem;
+  resize: none;
+  overflow-y: auto;
+  padding: 0.14rem 0;
+  border: 0;
+  outline: 0;
+  color: #ffffff;
+  background: transparent;
+  font: inherit;
+  font-size: var(--type-body);
+  font-weight: 400;
+  line-height: 1.45;
+  caret-color: #ffffff;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.61);
+}
+
+.action {
+  min-width: 3.4rem;
+  min-height: 2rem;
+  padding: 0.42rem 0.65rem;
+  border: 0;
+  border-radius: 0.35rem;
+  outline: 0;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.1);
+  font: inherit;
+  font-size: var(--type-button);
+  font-weight: 500;
+  letter-spacing: var(--tracking-navigation);
+  cursor: pointer;
+  transition:
+    color 160ms ease-out,
+    background 160ms ease-out,
+    opacity 160ms ease-out;
+}
+
+.action:hover,
+.action:focus-visible {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.action:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.62);
+  outline-offset: 0.2rem;
+}
+
+.action:disabled {
+  opacity: 0.36;
+  cursor: default;
+}
+
+.meta {
+  display: flex;
+  min-height: 1rem;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: var(--type-caption);
+  line-height: 1.35;
+}
+
+@media (max-width: 480px) {
+  .inputFrame {
+    padding-inline: 0.85rem 0.7rem;
+  }
+
+  .meta {
+    font-size: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inputFrame,
+  .action {
+    transition: none;
+  }
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 856" role="img" aria-labelledby="title description">
+  <title id="title">Portrait room key placeholder</title>
+  <desc id="description">A vertical neutral room key tag awaiting its final archive photograph.</desc>
+  <rect width="540" height="856" rx="28" fill="#292824"/>
+  <circle cx="270" cy="108" r="24" fill="none" stroke="#c8c3b8" stroke-width="5"/>
+  <path d="M74 186h392M74 692h392" fill="none" stroke="#77736b" stroke-width="4"/>
+  <text x="270" y="390" fill="#e2ddd2" font-family="Helvetica, Arial, sans-serif" font-size="34" letter-spacing="8" text-anchor="middle" transform="rotate(-90 270 390)">ROOM KEY</text>
+  <text x="270" y="760" fill="#aaa69d" font-family="Helvetica, Arial, sans-serif" font-size="18" letter-spacing="4" text-anchor="middle">ARCHIVE</text>
+</svg>

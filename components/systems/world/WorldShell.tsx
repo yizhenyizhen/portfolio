@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WorldChapterExperience } from "@/components/systems/world/WorldChapterExperience";
 import { WorldSection } from "@/components/systems/world/WorldSection";
 import { WorldSidebar } from "@/components/systems/world/WorldSidebar";
 import { getPrimaryNavigationItems } from "@/lib/navigation/get-navigation";
@@ -51,7 +52,9 @@ export function WorldShell({ world }: { world: WorldDefinition }) {
                 key={chapter.slug}
                 chapter={chapter}
                 index={index}
-              />
+              >
+                <WorldChapterExperience experience={chapter.experience} />
+              </WorldSection>
             ))}
           </div>
         </div>

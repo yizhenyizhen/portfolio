@@ -1,0 +1,107 @@
+.answer {
+  display: grid;
+  width: 100%;
+  min-height: 0;
+  gap: 1.15rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.1rem 0.25rem 0.25rem;
+  text-align: left;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.question {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--tracking-navigation);
+  line-height: 1.45;
+}
+
+.text {
+  max-width: 68ch;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: var(--type-body);
+  font-weight: 400;
+  line-height: 1.72;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 1em;
+  margin-inline-start: 0.18em;
+  background: currentColor;
+  vertical-align: -0.1em;
+  animation: answer-caret 900ms steps(1, end) infinite;
+}
+
+.notice {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--type-body-small);
+  line-height: 1.5;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.controls button {
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  outline: 0;
+  color: rgba(255, 255, 255, 0.66);
+  background: transparent;
+  font: inherit;
+  font-size: var(--type-button);
+  letter-spacing: var(--tracking-navigation);
+  cursor: pointer;
+}
+
+.controls button:hover,
+.controls button:focus-visible {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.72);
+}
+
+.controls button:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 0.25rem;
+}
+
+.citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: var(--type-caption);
+  list-style: none;
+}
+
+.citations a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+@keyframes answer-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+  }
+}

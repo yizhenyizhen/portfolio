@@ -103,13 +103,9 @@ export function HomepageRingExperience({
     );
   }, []);
 
-  const handleSearchSubmit = useCallback(
-    (value: string) => {
-      console.log(value);
-      openWorkspace();
-    },
-    [openWorkspace],
-  );
+  const handleSearchSubmit = useCallback(() => {
+    openWorkspace();
+  }, [openWorkspace]);
 
   return (
     <div className="relative h-full w-full">
@@ -158,6 +154,7 @@ export function HomepageRingExperience({
 
       <AIOverlay
         phase={workspacePhase}
+        initialQuestion={searchValue}
         onRequestClose={closeWorkspace}
         onExitComplete={completeWorkspaceExit}
       />

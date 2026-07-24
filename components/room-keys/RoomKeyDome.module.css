@@ -1,0 +1,200 @@
+.root {
+  --dome-radius: 31rem;
+  --room-key-slot: 9.5rem;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: clamp(32rem, 68svh, 46rem);
+  margin-block-start: clamp(3rem, 6vw, 5rem);
+  overflow: hidden;
+  color: var(--color-text-primary);
+  background: #080809;
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.surface:active {
+  cursor: grabbing;
+}
+
+.surface:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.62);
+  outline-offset: -0.5rem;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  perspective: calc(var(--dome-radius) * 2.25);
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+.sphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--room-key-slot);
+  height: var(--room-key-slot);
+  pointer-events: none;
+  transform:
+    translate(-50%, -50%)
+    rotateY(var(--room-key-longitude))
+    rotateX(var(--room-key-latitude))
+    translateZ(var(--dome-radius));
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.tileLink {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: var(--room-key-width);
+  height: var(--room-key-height);
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) translateZ(0);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition: transform var(--motion-fast) ease-out;
+}
+
+.tileLink:hover,
+.tileLink:focus-visible {
+  transform: translate(-50%, -50%) translateZ(0.5rem);
+}
+
+.tileLink:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 0.3rem;
+}
+
+.visual {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  transform: translateZ(0);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+.visualImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.placeholderIndex {
+  position: absolute;
+  right: 8%;
+  bottom: 9%;
+  color: rgba(20, 20, 19, 0.6);
+  font-family: var(--font-mono-role);
+  font-size: clamp(0.42rem, 0.6vw, 0.6rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.11em;
+}
+
+.visual[data-room-key-shape="rectangle"] .placeholderIndex,
+.visual[data-room-key-shape="irregular"] .placeholderIndex {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(8, 8, 9, 0.58) 0,
+      transparent 21%,
+      transparent 78%,
+      rgba(8, 8, 9, 0.7) 100%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 44%,
+      rgba(8, 8, 9, 0.46) 100%
+    );
+}
+
+.readout {
+  position: absolute;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+  left: max(1rem, env(safe-area-inset-left));
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  pointer-events: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono-role);
+  font-size: var(--type-index);
+  line-height: 1;
+  letter-spacing: var(--tracking-index);
+  text-transform: uppercase;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (max-width: 47.9375rem) {
+  .root {
+    width: calc(100% + 2 * var(--space-page-inline));
+    height: clamp(29rem, 72svh, 37rem);
+    margin-inline: calc(var(--space-page-inline) * -1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tileLink {
+    transition: none;
+  }
+}

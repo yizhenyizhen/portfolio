@@ -15,6 +15,7 @@ export type AIWorkspacePhase = "closed" | "open" | "closing";
 
 type AIOverlayProps = {
   phase: AIWorkspacePhase;
+  initialQuestion: string;
   onRequestClose: () => void;
   onExitComplete: () => void;
 };
@@ -25,6 +26,7 @@ function stopHomepageInput(event: SyntheticEvent) {
 
 export function AIOverlay({
   phase,
+  initialQuestion,
   onRequestClose,
   onExitComplete,
 }: AIOverlayProps) {
@@ -55,7 +57,12 @@ export function AIOverlay({
     if (homepage) homepage.inert = true;
 
     const frame = window.requestAnimationFrame(() => {
-      closeButtonRef.current?.focus({ preventScroll: true });
+      const questionInput = document.querySelector<HTMLTextAreaElement>(
+        "[data-ai-question-input]",
+      );
+      (questionInput ?? closeButtonRef.current)?.focus({
+        preventScroll: true,
+      });
     });
 
     return () => {
@@ -99,16 +106,11 @@ export function AIOverlay({
       aria-labelledby="ai-workspace-title"
       aria-modal={active ? "true" : undefined}
       aria-hidden={!active}
+      inert={!active}
       onTransitionEnd={handleTransitionEnd}
       onPointerDown={stopHomepageInput}
       onPointerMove={stopHomepageInput}
       onPointerUp={stopHomepageInput}
-      onMouseDown={stopHomepageInput}
-      onMouseMove={stopHomepageInput}
-      onMouseUp={stopHomepageInput}
-      onTouchStart={stopHomepageInput}
-      onTouchMove={stopHomepageInput}
-      onTouchEnd={stopHomepageInput}
       onWheel={stopHomepageInput}
     >
       <button
@@ -122,7 +124,10 @@ export function AIOverlay({
       </button>
 
       <div className={styles.workspaceLayer}>
-        <AIWorkspace />
+        <AIWorkspace
+          active={active}
+          initialQuestion={initialQuestion}
+        />
       </div>
     </div>,
     portalTarget,

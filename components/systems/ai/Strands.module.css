@@ -1,0 +1,31 @@
+.strands {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 50% 52%,
+      rgba(132, 154, 166, 0.14),
+      transparent 56%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 42%);
+  pointer-events: none;
+}
+
+.strands canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 360ms ease-out;
+}
+
+.strands[data-renderer="ready"] canvas {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strands canvas {
+    transition: none;
+  }
+}

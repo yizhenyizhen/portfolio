@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 820" role="img" aria-labelledby="title description">
+  <title id="title">Irregular room key placeholder</title>
+  <desc id="description">A transparent irregular room key tag awaiting its final archive photograph.</desc>
+  <path d="M170 36h340l86 106-38 112 58 138-62 126 26 150-118 116H218L92 688l30-152-58-132 62-136-42-118z" fill="#8d877b"/>
+  <circle cx="340" cy="126" r="28" fill="none" stroke="#ddd7cb" stroke-width="6"/>
+  <path d="M180 232h320M180 626h320" fill="none" stroke="#d1cabc" stroke-width="4"/>
+  <text x="340" y="398" fill="#f0ebe0" font-family="Helvetica, Arial, sans-serif" font-size="34" letter-spacing="8" text-anchor="middle">ROOM KEY</text>
+  <text x="340" y="447" fill="#ddd7cb" font-family="Helvetica, Arial, sans-serif" font-size="18" letter-spacing="5" text-anchor="middle">ARCHIVE</text>
+</svg>

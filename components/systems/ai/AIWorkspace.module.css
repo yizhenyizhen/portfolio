@@ -1,34 +1,196 @@
 .workspace {
+  position: relative;
   display: grid;
-  width: min(38rem, calc(100vw - 2 * var(--space-page-inline)));
-  justify-items: center;
-  gap: clamp(0.65rem, 1.4vw, 1rem);
+  width: min(52rem, calc(100vw - 2 * var(--space-page-inline)));
+  height: min(43rem, calc(100dvh - 2 * var(--space-page-block)));
+  min-height: min(32rem, calc(100dvh - 2 * var(--space-page-block)));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: clamp(0.8rem, 1.6vw, 1.25rem);
+  background: rgba(11, 12, 14, 0.72);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.06),
+    0 1.5rem 5rem rgba(0, 0, 0, 0.22);
   color: #ffffff;
+}
+
+.strands {
+  z-index: 0;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(9, 10, 12, 0.28),
+      rgba(9, 10, 12, 0.62) 48%,
+      rgba(9, 10, 12, 0.88)
+    ),
+    radial-gradient(
+      ellipse at 50% 35%,
+      transparent 0%,
+      rgba(4, 5, 6, 0.25) 72%
+    );
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  align-content: center;
+  width: min(42rem, 100%);
+  min-height: 0;
+  margin: auto;
+  padding: clamp(1.35rem, 3.5vw, 3.5rem);
+  gap: clamp(1rem, 2.1vw, 1.75rem);
+}
+
+.header {
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.55rem, 1.3vw, 0.85rem);
   text-align: center;
+  transition:
+    opacity 240ms ease-out,
+    transform 300ms ease-out;
+}
+
+.workspace[data-has-answer="true"] .header {
+  opacity: 0.62;
+  transform: translateY(-0.2rem);
 }
 
 .label,
-.status {
+.processing {
   margin: 0;
   font-size: var(--type-label);
   font-weight: 500;
-  letter-spacing: var(--tracking-navigation);
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
 
 .label {
-  opacity: 0.58;
+  color: rgba(255, 255, 255, 0.56);
 }
 
 .title {
+  max-width: 100%;
   margin: 0;
-  font-size: clamp(1.75rem, 4vw, 3.25rem);
+  font-size: clamp(1.55rem, 4vw, 3rem);
   font-weight: 500;
-  line-height: 1.04;
+  line-height: 1.06;
   letter-spacing: -0.035em;
+}
+
+.intro {
+  max-width: 46ch;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: var(--type-body-small);
+  line-height: 1.55;
+}
+
+.processing {
+  color: rgba(255, 255, 255, 0.52);
+  letter-spacing: var(--tracking-navigation);
+  text-align: left;
+}
+
+.liveStatus {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
-.status {
-  opacity: 0.76;
+.busyMarker {
+  position: absolute;
+  right: clamp(1.35rem, 3.5vw, 3.5rem);
+  bottom: clamp(1.35rem, 3.5vw, 3.5rem);
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.68);
+  animation: workspace-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes workspace-pulse {
+  50% {
+    opacity: 0.28;
+  }
+}
+
+@media (max-width: 640px) {
+  .workspace {
+    width: calc(100vw - 1.5rem);
+    height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    min-height: 0;
+  }
+
+  .content {
+    align-content: start;
+    padding:
+      max(1.4rem, env(safe-area-inset-top))
+      1.05rem
+      max(1.2rem, env(safe-area-inset-bottom));
+    gap: 1rem;
+  }
+
+  .header {
+    padding-inline: 0.35rem;
+  }
+
+  .intro {
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-height: 620px) and (orientation: landscape) {
+  .workspace {
+    height: calc(100dvh - 1rem);
+  }
+
+  .content {
+    grid-template-columns: minmax(13rem, 0.72fr) minmax(18rem, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: center;
+    width: 100%;
+    padding: 1.15rem 3.5rem 1.15rem 1.5rem;
+  }
+
+  .header {
+    grid-column: 1;
+    text-align: left;
+    justify-items: start;
+  }
+
+  .content > form {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .content > section {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .processing {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .busyMarker {
+    transition: none;
+    animation: none;
+  }
 }
