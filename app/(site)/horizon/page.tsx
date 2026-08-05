@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import { IdentityPageShell } from "@/components/systems/identity";
-import { getIdentityEntry } from "@/data/site/identity";
+import { getLocalizedIdentityEntry } from "@/data/site/identity-translations";
+import { getRequestLocale } from "@/lib/i18n/request";
 
-const identity = getIdentityEntry("horizon");
+export async function generateMetadata(): Promise<Metadata> {
+  const identity = getLocalizedIdentityEntry("horizon", await getRequestLocale());
+  return { title: identity.title, description: identity.description };
+}
 
-export const metadata: Metadata = {
-  title: identity.title,
-  description: identity.description,
-};
-
-export default function HorizonPage() {
-  return <IdentityPageShell identity={identity} />;
+export default async function HorizonPage() {
+  const locale = await getRequestLocale();
+  return (
+    <IdentityPageShell
+      identity={getLocalizedIdentityEntry("horizon", locale)}
+      locale={locale}
+    />
+  );
 }

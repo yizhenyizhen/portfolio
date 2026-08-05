@@ -1,22 +1,27 @@
 import type { ReactNode } from "react";
 import type { WorldChapter } from "@/types/world";
 
-const STATUS_LABELS: Record<WorldChapter["status"], string> = {
-  "coming-soon": "Coming soon",
-  "coming-later": "Coming later",
-};
-
 type WorldSectionProps = {
   chapter: WorldChapter;
   index: number;
   children?: ReactNode;
+  labels: {
+    comingSoon: string;
+    comingLater: string;
+    contentFramework: string;
+  };
 };
 
 export function WorldSection({
   chapter,
   index,
   children,
+  labels,
 }: WorldSectionProps) {
+  const statusLabel =
+    chapter.status === "coming-soon"
+      ? labels.comingSoon
+      : labels.comingLater;
   return (
     <section
       id={chapter.slug}
@@ -25,7 +30,7 @@ export function WorldSection({
     >
       <div className="world-section__meta">
         <span>{String(index + 1).padStart(2, "0")}</span>
-        <span>{STATUS_LABELS[chapter.status]}</span>
+        <span>{statusLabel}</span>
       </div>
 
       <div className="world-section__intro">
@@ -39,7 +44,7 @@ export function WorldSection({
 
       <div className="world-section__framework">
         <p className="world-section__framework-label">
-          Content framework
+          {labels.contentFramework}
         </p>
         <ol className="world-section__content-list">
           {chapter.contentTypes.map((contentType, contentIndex) => (

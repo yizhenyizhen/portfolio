@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useI18n } from "@/components/systems/i18n";
 import { AIAnswerView } from "./AIAnswerView";
 import { AIQuestionForm } from "./AIQuestionForm";
 import { Strands } from "./Strands";
@@ -12,6 +13,7 @@ import {
   type AIQuestionRequest,
 } from "@/lib/ai/client-types";
 import { consumeAIStreamBuffer } from "@/lib/ai/stream-protocol";
+import { formatMessage } from "@/lib/i18n/messages";
 import styles from "./AIWorkspace.module.css";
 
 type AIWorkspaceProps = {
@@ -37,20 +39,24 @@ const STRANDS_PROFILE: Record<
   aborted: { speed: 0.2, intensity: 0.27, opacity: 0.4 },
 };
 
-function getFallbackError(status: number) {
+function getFallbackError(
+  status: number,
+  messages: ReturnType<typeof useI18n>["messages"],
+) {
   if (status === 429) {
-    return "Too many questions were sent recently. Please wait a moment.";
+    return messages.ai.tooManyQuestions;
   }
   if (status === 503) {
-    return "The AI workspace is not connected yet. Please try again later.";
+    return messages.ai.notConnected;
   }
-  return "The answer service is temporarily unavailable.";
+  return messages.ai.serviceUnavailable;
 }
 
 export function AIWorkspace({
   active,
   initialQuestion,
 }: AIWorkspaceProps) {
+  const { locale, messages } = useI18n();
   const [question, setQuestion] = useState(initialQuestion);
   const [submittedQuestion, setSubmittedQuestion] = useState("");
   const [answer, setAnswer] = useState<AIAnswer>(EMPTY_ANSWER);
@@ -145,7 +151,7 @@ export function AIWorkspace({
     setAnswer(EMPTY_ANSWER);
     setErrorMessage("");
     setInterfaceState("submitting");
-    setAnnouncement("Question submitted. Preparing an answer.");
+    setAnnouncement(messages.ai.submittedAnnouncement);
 
     const payload: AIQuestionRequest = {
       question: normalizedQuestion,
@@ -153,7 +159,7 @@ export function AIWorkspace({
     };
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           Accept: "text/event-stream",
@@ -166,10 +172,12 @@ export function AIWorkspace({
       });
 
       if (!response.ok) {
-        let message = getFallbackError(response.status);
+        let message = getFallbackError(response.status, messages);
         try {
           const body = (await response.json()) as AIErrorResponse;
-          if (body.error?.message) message = body.error.message;
+          if (locale === "en" && body.error?.message) {
+            message = body.error.message;
+          }
         } catch {
           // A non-JSON upstream failure keeps the normalized fallback message.
         }
@@ -177,7 +185,7 @@ export function AIWorkspace({
       }
 
       if (!response.body) {
-        throw new Error("The answer stream could not be opened.");
+        throw new Error(messages.ai.streamUnavailable);
       }
 
       const reader = response.body.getReader();
@@ -206,7 +214,7 @@ export function AIWorkspace({
               citations: event.citations,
             }));
             setInterfaceState("complete");
-            setAnnouncement("Answer complete.");
+            setAnnouncement(messages.ai.completeAnnouncement);
           } else {
             throw new Error(event.message);
           }
@@ -230,31 +238,33 @@ export function AIWorkspace({
 
       flushPendingText();
       if (!completed) {
-        throw new Error("The answer ended unexpectedly. Please try again.");
+        throw new Error(messages.ai.answerEnded);
       }
       setInterfaceState("complete");
-      setAnnouncement("Answer complete.");
+      setAnnouncement(messages.ai.completeAnnouncement);
     } catch (error) {
       flushPendingText();
 
       if (abortController.signal.aborted) {
         setInterfaceState("aborted");
-        setAnnouncement("Answer generation stopped.");
+        setAnnouncement(messages.ai.stoppedAnnouncement);
       } else {
         const message =
           error instanceof Error
             ? error.message
-            : "The answer service is temporarily unavailable.";
+            : messages.ai.serviceUnavailable;
         setErrorMessage(message);
         setInterfaceState("error");
-        setAnnouncement(`Answer error. ${message}`);
+        setAnnouncement(
+          formatMessage(messages.ai.errorAnnouncement, { message }),
+        );
       }
     } finally {
       if (abortControllerRef.current === abortController) {
         abortControllerRef.current = null;
       }
     }
-  }, [flushPendingText, question, queueText]);
+  }, [flushPendingText, locale, messages, question, queueText]);
 
   const stopGeneration = useCallback(() => {
     const abortController = abortControllerRef.current;
@@ -262,8 +272,8 @@ export function AIWorkspace({
 
     abortController.abort();
     setInterfaceState("aborted");
-    setAnnouncement("Answer generation stopped.");
-  }, []);
+    setAnnouncement(messages.ai.stoppedAnnouncement);
+  }, [messages.ai.stoppedAnnouncement]);
 
   const handleFocusChange = useCallback(
     (focused: boolean) => {
@@ -312,13 +322,12 @@ export function AIWorkspace({
 
       <div className={styles.content}>
         <header className={styles.header}>
-          <p className={styles.label}>AI WORKSPACE</p>
+          <p className={styles.label}>{messages.ai.workspaceLabel}</p>
           <h2 id="ai-workspace-title" className={styles.title}>
-            Ask anything about Yizhen.
+            {messages.ai.title}
           </h2>
           <p className={styles.intro}>
-            The personal archive is still being connected. General questions
-            are available now.
+            {messages.ai.introduction}
           </p>
         </header>
 
@@ -333,7 +342,7 @@ export function AIWorkspace({
 
         {interfaceState === "submitting" ? (
           <p className={styles.processing} aria-hidden="true">
-            Considering the question...
+            {messages.ai.processing}
           </p>
         ) : null}
 

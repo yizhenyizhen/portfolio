@@ -11,6 +11,8 @@ import {
   useRef,
 } from "react";
 import type { RoomKey } from "@/types/room-key";
+import { useI18n } from "@/components/systems/i18n";
+import { formatMessage } from "@/lib/i18n/messages";
 import { RoomKeyTile } from "./RoomKeyTile";
 import styles from "./RoomKeyDome.module.css";
 
@@ -114,6 +116,7 @@ function isInitialFrontSlot(longitude: number) {
 }
 
 export function RoomKeyDome({ items }: RoomKeyDomeProps) {
+  const { locale, messages } = useI18n();
   const rootRef = useRef<HTMLDivElement>(null);
   const sphereRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef<Rotation>({ x: -4, y: 0 });
@@ -354,14 +357,13 @@ export function RoomKeyDome({ items }: RoomKeyDomeProps) {
       style={rootStyle}
     >
       <p id="room-key-dome-instructions" className={styles.srOnly}>
-        Drag to rotate the archive. Use the arrow keys to rotate when the
-        archive is focused. Press Home to return to the starting position.
+        {messages.roomKeys.instructions}
       </p>
       <div
         {...bind()}
         className={styles.surface}
         tabIndex={0}
-        aria-label="Interactive room key archive"
+        aria-label={messages.roomKeys.archiveLabel}
         aria-describedby="room-key-dome-instructions"
         onClickCapture={handleClickCapture}
         onKeyDown={handleKeyDown}
@@ -370,7 +372,9 @@ export function RoomKeyDome({ items }: RoomKeyDomeProps) {
           <div
             ref={sphereRef}
             role="list"
-            aria-label={`${items.length} room key records`}
+            aria-label={formatMessage(messages.roomKeys.recordsLabel, {
+              count: items.length,
+            })}
             className={styles.sphere}
             data-room-key-sphere
           >
@@ -381,6 +385,7 @@ export function RoomKeyDome({ items }: RoomKeyDomeProps) {
                 latitude={latitude}
                 longitude={longitude}
                 priority={isInitialFrontSlot(longitude)}
+                locale={locale}
               />
             ))}
           </div>
@@ -388,8 +393,12 @@ export function RoomKeyDome({ items }: RoomKeyDomeProps) {
       </div>
       <div aria-hidden="true" className={styles.vignette} />
       <div aria-hidden="true" className={styles.readout}>
-        <span>Drag to rotate</span>
-        <span>{String(items.length).padStart(2, "0")} records</span>
+        <span>{messages.roomKeys.dragToRotate}</span>
+        <span>
+          {formatMessage(messages.roomKeys.records, {
+            count: String(items.length).padStart(2, "0"),
+          })}
+        </span>
       </div>
     </div>
   );

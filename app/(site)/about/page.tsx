@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import { IdentityPageShell } from "@/components/systems/identity";
-import { getIdentityEntry } from "@/data/site/identity";
+import { getLocalizedIdentityEntry } from "@/data/site/identity-translations";
+import { getRequestLocale } from "@/lib/i18n/request";
 
-const identity = getIdentityEntry("about");
+export async function generateMetadata(): Promise<Metadata> {
+  const identity = getLocalizedIdentityEntry("about", await getRequestLocale());
+  return { title: identity.title, description: identity.description };
+}
 
-export const metadata: Metadata = {
-  title: identity.title,
-  description: identity.description,
-};
-
-export default function AboutPage() {
-  return <IdentityPageShell identity={identity} />;
+export default async function AboutPage() {
+  const locale = await getRequestLocale();
+  return (
+    <IdentityPageShell
+      identity={getLocalizedIdentityEntry("about", locale)}
+      locale={locale}
+    />
+  );
 }

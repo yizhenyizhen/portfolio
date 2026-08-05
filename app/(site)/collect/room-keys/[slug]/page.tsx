@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LanguageSwitcher } from "@/components/systems/i18n";
 import { RoomKeyVisual } from "@/components/room-keys/RoomKeyVisual";
-import { getRoomKey, roomKeys } from "@/data/roomKeys";
+import {
+  getLocalizedRoomKey,
+  getLocalizedRoomKeys,
+} from "@/data/room-key-translations";
+import { roomKeys } from "@/data/roomKeys";
+import { formatMessage, getMessages } from "@/lib/i18n/messages";
+import { getRequestLocale } from "@/lib/i18n/request";
+import { localizeHref } from "@/lib/i18n/routing";
 
 type RoomKeyPageProps = {
   params: Promise<{ slug: string }>;
@@ -16,30 +24,41 @@ export async function generateMetadata({
   params,
 }: RoomKeyPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const roomKey = getRoomKey(slug);
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  const roomKey = getLocalizedRoomKey(slug, locale);
 
   if (!roomKey) {
-    return { title: "Room key not found" };
+    return { title: messages.roomKeys.notFound };
   }
 
   return {
     title: roomKey.title,
-    description: `Placeholder archive record for ${roomKey.title}.`,
+    description: formatMessage(messages.roomKeys.metadataDescription, {
+      title: roomKey.title,
+    }),
   };
 }
 
 export default async function RoomKeyPage({ params }: RoomKeyPageProps) {
   const { slug } = await params;
-  const roomKey = getRoomKey(slug);
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  const localizedRoomKeys = getLocalizedRoomKeys(locale);
+  const roomKey = getLocalizedRoomKey(slug, locale);
 
   if (!roomKey) {
     notFound();
   }
 
-  const currentIndex = roomKeys.findIndex((item) => item.id === roomKey.id);
+  const currentIndex = localizedRoomKeys.findIndex(
+    (item) => item.id === roomKey.id,
+  );
   const previous =
-    roomKeys[(currentIndex - 1 + roomKeys.length) % roomKeys.length];
-  const next = roomKeys[(currentIndex + 1) % roomKeys.length];
+    localizedRoomKeys[
+      (currentIndex - 1 + localizedRoomKeys.length) % localizedRoomKeys.length
+    ];
+  const next = localizedRoomKeys[(currentIndex + 1) % localizedRoomKeys.length];
   const portrait = roomKey.height > roomKey.width;
 
   return (
@@ -48,15 +67,18 @@ export default async function RoomKeyPage({ params }: RoomKeyPageProps) {
         <section className="grid min-h-screen grid-rows-[auto_1fr_auto] py-[var(--space-page-block)] [min-height:100dvh]">
           <div className="flex items-start justify-between gap-8 border-b border-white/12 pb-4">
             <Link
-              href="/collect#room-keys"
+              href={localizeHref("/collect#room-keys", locale)}
               className="site-page__back-link"
             >
               <span aria-hidden="true">&larr;</span>
-              Back to Room Keys
+              {messages.roomKeys.back}
             </Link>
-            <p className="type-label m-0 pt-3 text-right text-[var(--color-text-muted)] uppercase">
-              Placeholder record
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="type-label m-0 text-right text-[var(--color-text-muted)] uppercase">
+                {messages.roomKeys.placeholderRecord}
+              </p>
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <div className="grid place-items-center py-[clamp(4rem,9vw,8rem)]">
@@ -84,12 +106,14 @@ export default async function RoomKeyPage({ params }: RoomKeyPageProps) {
 
           <div className="grid gap-8 border-t border-white/12 pt-5 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
             <Link
-              href={previous.href}
+              href={localizeHref(previous.href, locale)}
               className="group flex min-h-11 flex-col justify-end"
-              aria-label={`Previous room key, ${previous.title}`}
+              aria-label={formatMessage(messages.roomKeys.previousLabel, {
+                title: previous.title,
+              })}
             >
               <span className="type-index text-[var(--color-text-muted)] uppercase">
-                Previous
+                {messages.roomKeys.previous}
               </span>
               <span className="type-body-small mt-2 uppercase opacity-70 transition-opacity group-hover:opacity-100">
                 {previous.title}
@@ -97,19 +121,21 @@ export default async function RoomKeyPage({ params }: RoomKeyPageProps) {
             </Link>
             <div className="sm:text-center">
               <p className="type-label m-0 text-[var(--color-text-muted)] uppercase">
-                Room Key Collection
+                {messages.roomKeys.collection}
               </p>
               <h1 className="type-section-title mb-0 mt-2 font-medium uppercase">
                 {roomKey.title}
               </h1>
             </div>
             <Link
-              href={next.href}
+              href={localizeHref(next.href, locale)}
               className="group flex min-h-11 flex-col justify-end sm:text-right"
-              aria-label={`Next room key, ${next.title}`}
+              aria-label={formatMessage(messages.roomKeys.nextLabel, {
+                title: next.title,
+              })}
             >
               <span className="type-index text-[var(--color-text-muted)] uppercase">
-                Next
+                {messages.roomKeys.next}
               </span>
               <span className="type-body-small mt-2 uppercase opacity-70 transition-opacity group-hover:opacity-100">
                 {next.title}

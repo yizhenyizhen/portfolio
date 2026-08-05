@@ -7,7 +7,7 @@ export type IdentityType = "person" | "practice" | "startup";
 export type IdentityEntry = {
   slug: IdentitySlug;
   title: string;
-  href: `/${IdentitySlug}`;
+  href: string;
   type: IdentityType;
   eyebrow: string;
   description: string;

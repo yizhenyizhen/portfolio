@@ -109,7 +109,7 @@ test.describe("Homepage AI workspace", () => {
   test("opens from the existing search arc and parses the internal stream", async ({
     page,
   }) => {
-    await page.route("**/api/ai", async (route) => {
+    await page.route("**/api/chat", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "text/event-stream; charset=utf-8",
@@ -163,7 +163,7 @@ test.describe("Homepage AI workspace", () => {
     await question.type("Second line");
     await expect(question).toHaveValue("First line\nSecond line");
 
-    const response = await page.request.post("/api/ai", {
+    const response = await page.request.post("/api/chat", {
       data: { question: "   " },
     });
     expect(response.status()).toBe(400);
@@ -200,7 +200,7 @@ test.describe("Homepage AI workspace", () => {
   test("stops an in-flight request without losing the submitted question", async ({
     page,
   }) => {
-    await page.route("**/api/ai", async (route) => {
+    await page.route("**/api/chat", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 2_000));
       await route.abort("failed").catch(() => undefined);
     });

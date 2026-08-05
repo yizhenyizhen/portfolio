@@ -1,11 +1,13 @@
 "use client";
 
 import Dither from "@/components/Dither";
+import { useI18n } from "@/components/systems/i18n";
 import { RingNavigationBoundary } from "@/components/systems/ring";
 import { getPrimaryNavigationItems } from "@/lib/navigation/get-navigation";
 
 export function HomePageRingLayout() {
-  const navigation = getPrimaryNavigationItems();
+  const { locale } = useI18n();
+  const navigation = getPrimaryNavigationItems(locale);
 
   return (
     <main className="relative h-screen overflow-hidden bg-[var(--color-background)]">

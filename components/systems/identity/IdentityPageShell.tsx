@@ -1,19 +1,24 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/systems/i18n";
 import { StarBorderLink } from "@/components/systems/identity/StarBorderLink";
 import { WorldSection } from "@/components/systems/world/WorldSection";
 import { WorldSidebar } from "@/components/systems/world/WorldSidebar";
-import {
-  identityEntries,
-  type IdentityEntry,
-} from "@/data/site/identity";
+import type { IdentityEntry } from "@/data/site/identity";
+import { getLocalizedIdentityEntries } from "@/data/site/identity-translations";
+import type { Locale } from "@/lib/i18n/config";
+import { formatMessage, getMessages } from "@/lib/i18n/messages";
+import { localizePath } from "@/lib/i18n/routing";
 
 type IdentityPageShellProps = {
   identity: IdentityEntry;
+  locale: Locale;
 };
 
 const LONG_TITLE_CHARACTER_THRESHOLD = 14;
 
-export function IdentityPageShell({ identity }: IdentityPageShellProps) {
+export function IdentityPageShell({ identity, locale }: IdentityPageShellProps) {
+  const messages = getMessages(locale);
+  const identityEntries = getLocalizedIdentityEntries(locale);
   const chapters = [...identity.chapters].sort((a, b) => a.order - b.order);
   const identityIndex = identityEntries.findIndex(
     (entry) => entry.slug === identity.slug,
@@ -33,16 +38,19 @@ export function IdentityPageShell({ identity }: IdentityPageShellProps) {
         <header className="site-page__header">
           <div className="site-page__topbar">
             <Link
-              href="/"
+              href={localizePath("/", locale)}
               className="site-page__back-link"
             >
               <span aria-hidden="true">&larr;</span>
-              Back to home
+              {messages.navigation.backToHome}
             </Link>
-            <p className="site-page__index">
-              {String(identityIndex + 1).padStart(2, "0")} /{" "}
-              {String(identityEntries.length).padStart(2, "0")}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="site-page__index">
+                {String(identityIndex + 1).padStart(2, "0")} /{" "}
+                {String(identityEntries.length).padStart(2, "0")}
+              </p>
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <div className="site-page__hero">
@@ -62,7 +70,9 @@ export function IdentityPageShell({ identity }: IdentityPageShellProps) {
           <WorldSidebar
             key={identity.slug}
             chapters={chapters}
-            worldLabel={identity.title}
+            ariaLabel={formatMessage(messages.navigation.chapters, {
+              world: identity.title,
+            })}
           />
 
           <div className="site-page__content">
@@ -71,14 +81,17 @@ export function IdentityPageShell({ identity }: IdentityPageShellProps) {
                 key={chapter.slug}
                 chapter={chapter}
                 index={index}
+                labels={messages.world}
               />
             ))}
           </div>
         </div>
 
         <footer className="site-page__footer">
-          <nav aria-label="Identity navigation">
-            <p className="site-page__footer-label">Identity</p>
+          <nav aria-label={messages.navigation.identity}>
+            <p className="site-page__footer-label">
+              {messages.identity.footerLabel}
+            </p>
             <ul className="site-page__footer-list">
               {identityEntries.map((entry) => (
                 <li key={entry.slug}>

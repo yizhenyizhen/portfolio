@@ -21,10 +21,10 @@ function smoothFalloff(value: number) {
 
 type WorldSidebarProps = {
   chapters: WorldChapter[];
-  worldLabel: string;
+  ariaLabel: string;
 };
 
-export function WorldSidebar({ chapters, worldLabel }: WorldSidebarProps) {
+export function WorldSidebar({ chapters, ariaLabel }: WorldSidebarProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const prefersReducedMotion = useReducedMotion();
   const listRef = useRef<HTMLUListElement>(null);
@@ -264,7 +264,7 @@ export function WorldSidebar({ chapters, worldLabel }: WorldSidebarProps) {
   }, [activateChapter, chapters, updateHash]);
 
   return (
-    <nav className="world-sidebar" aria-label={`${worldLabel} chapters`}>
+    <nav className="world-sidebar" aria-label={ariaLabel}>
       <ul
         ref={listRef}
         className="world-sidebar__list"

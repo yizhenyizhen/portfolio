@@ -6,6 +6,8 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
+import { useI18n } from "@/components/systems/i18n";
+import { formatMessage } from "@/lib/i18n/messages";
 import {
   AI_QUESTION_MAX_LENGTH,
   type AIInterfaceState,
@@ -29,6 +31,7 @@ export function AIQuestionForm({
   onSubmit,
   onStop,
 }: AIQuestionFormProps) {
+  const { messages } = useI18n();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pending = state === "submitting" || state === "streaming";
   const canSubmit = value.trim().length > 0 && !pending;
@@ -61,7 +64,7 @@ export function AIQuestionForm({
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <label className={styles.srOnly} htmlFor="ai-question">
-        Ask a question
+        {messages.ai.questionLabel}
       </label>
       <div className={styles.inputFrame} data-pending={pending}>
         <textarea
@@ -73,7 +76,7 @@ export function AIQuestionForm({
           value={value}
           maxLength={AI_QUESTION_MAX_LENGTH}
           rows={1}
-          placeholder="Ask anything about Yizhen..."
+          placeholder={messages.ai.questionPlaceholder}
           autoComplete="off"
           spellCheck="true"
           onBlur={() => onFocusChange(false)}
@@ -86,33 +89,33 @@ export function AIQuestionForm({
           <button
             className={styles.action}
             type="button"
-            aria-label="Stop generating answer"
+            aria-label={messages.ai.stopLabel}
             onClick={onStop}
             onPointerDown={(event) => {
               if (event.button === 0) onStop();
             }}
           >
-            Stop
+            {messages.ai.stop}
           </button>
         ) : (
           <button
             className={styles.action}
             type="submit"
-            aria-label="Submit question"
+            aria-label={messages.ai.askLabel}
             disabled={!canSubmit}
           >
-            Ask
+            {messages.ai.ask}
           </button>
         )}
       </div>
 
       <div className={styles.meta} aria-hidden="true">
-        <span>Enter to ask · Shift + Enter for a new line</span>
-        {value.length > AI_QUESTION_MAX_LENGTH * 0.8 ? (
-          <span>
-            {value.length}/{AI_QUESTION_MAX_LENGTH}
-          </span>
-        ) : null}
+        <span>{messages.ai.keyboardHint}</span>
+        <span>
+          {formatMessage(messages.ai.charactersRemaining, {
+            count: AI_QUESTION_MAX_LENGTH - value.length,
+          })}
+        </span>
       </div>
     </form>
   );

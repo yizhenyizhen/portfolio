@@ -8,6 +8,7 @@ import {
   type TransitionEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { useI18n } from "@/components/systems/i18n";
 import { AIWorkspace } from "./AIWorkspace";
 import styles from "./AIOverlay.module.css";
 
@@ -30,6 +31,7 @@ export function AIOverlay({
   onRequestClose,
   onExitComplete,
 }: AIOverlayProps) {
+  const { messages } = useI18n();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -117,7 +119,7 @@ export function AIOverlay({
         ref={closeButtonRef}
         className={styles.close}
         type="button"
-        aria-label="Close AI workspace"
+        aria-label={messages.ai.close}
         onClick={onRequestClose}
       >
         <span aria-hidden="true">×</span>

@@ -1,11 +1,17 @@
 import Link from "next/link";
-import { identityHeaderEntries } from "@/data/site/identity";
+import { getLocalizedIdentityHeaderEntries } from "@/data/site/identity-translations";
+import { getMessages } from "@/lib/i18n/messages";
+import { getRequestLocale } from "@/lib/i18n/request";
 import styles from "./IdentityHeader.module.css";
 
-export function IdentityHeader() {
+export async function IdentityHeader() {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  const identityHeaderEntries = getLocalizedIdentityHeaderEntries(locale);
+
   return (
     <header className={styles.header}>
-      <nav aria-label="Identity navigation">
+      <nav aria-label={messages.navigation.identity}>
         <ul className={styles.list}>
           {identityHeaderEntries.map((identity) => {
             const className = `${styles.link} ${
@@ -25,7 +31,7 @@ export function IdentityHeader() {
                     href={identity.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={identity.ariaLabel}
+                    aria-label={messages.identity.visitZenFurniture}
                     className={className}
                   >
                     {content}

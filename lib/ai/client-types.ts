@@ -1,4 +1,4 @@
-export const AI_QUESTION_MAX_LENGTH = 1_200;
+export const AI_QUESTION_MAX_LENGTH = 2_000;
 
 export type AIInterfaceState =
   | "idle"

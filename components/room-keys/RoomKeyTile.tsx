@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { RoomKey } from "@/types/room-key";
+import type { Locale } from "@/lib/i18n/config";
+import { getMessages, formatMessage } from "@/lib/i18n/messages";
+import { localizeHref } from "@/lib/i18n/routing";
 import { RoomKeyVisual } from "./RoomKeyVisual";
 import styles from "./RoomKeyDome.module.css";
 
@@ -9,6 +12,7 @@ type RoomKeyTileProps = {
   longitude: number;
   latitude: number;
   priority?: boolean;
+  locale: Locale;
 };
 
 type TileStyle = CSSProperties & {
@@ -23,7 +27,9 @@ export function RoomKeyTile({
   longitude,
   latitude,
   priority = false,
+  locale,
 }: RoomKeyTileProps) {
+  const messages = getMessages(locale);
   const largestDimension = Math.max(roomKey.width, roomKey.height);
   const style: TileStyle = {
     "--room-key-longitude": `${longitude}deg`,
@@ -42,8 +48,10 @@ export function RoomKeyTile({
       style={style}
     >
       <Link
-        href={roomKey.href}
-        aria-label={`View ${roomKey.title}`}
+        href={localizeHref(roomKey.href, locale)}
+        aria-label={formatMessage(messages.roomKeys.viewLabel, {
+          title: roomKey.title,
+        })}
         className={styles.tileLink}
         data-room-key-link={roomKey.id}
         data-room-key-width={roomKey.width}

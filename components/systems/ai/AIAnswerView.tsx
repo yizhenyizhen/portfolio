@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/components/systems/i18n";
 import type { AIAnswer, AIInterfaceState } from "@/lib/ai/client-types";
 import styles from "./AIAnswerView.module.css";
 
@@ -18,6 +21,7 @@ export function AIAnswerView({
   onRetry,
   onReset,
 }: AIAnswerViewProps) {
+  const { messages } = useI18n();
   const hasAnswer = answer.text.length > 0;
   const showError = state === "error";
   const showAborted = state === "aborted";
@@ -25,7 +29,7 @@ export function AIAnswerView({
   if (!hasAnswer && !showError && !showAborted) return null;
 
   return (
-    <section className={styles.answer} aria-label="AI answer">
+    <section className={styles.answer} aria-label={messages.ai.answerLabel}>
       <p className={styles.question}>{question}</p>
 
       {hasAnswer ? (
@@ -38,7 +42,7 @@ export function AIAnswerView({
       ) : null}
 
       {answer.citations.length > 0 ? (
-        <ul className={styles.citations} aria-label="Sources">
+        <ul className={styles.citations} aria-label={messages.ai.sources}>
           {answer.citations.map((citation) => (
             <li key={citation.id}>
               {citation.href ? (
@@ -55,18 +59,18 @@ export function AIAnswerView({
         <p className={styles.notice}>{errorMessage}</p>
       ) : null}
       {showAborted ? (
-        <p className={styles.notice}>Generation stopped.</p>
+        <p className={styles.notice}>{messages.ai.generationStopped}</p>
       ) : null}
 
       {state === "complete" || showError || showAborted ? (
         <div className={styles.controls}>
           {showError ? (
             <button type="button" onClick={onRetry}>
-              Retry
+              {messages.ai.retry}
             </button>
           ) : null}
           <button type="button" onClick={onReset}>
-            New question
+            {messages.ai.newQuestion}
           </button>
         </div>
       ) : null}

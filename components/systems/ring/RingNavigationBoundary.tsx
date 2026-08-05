@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import { useI18n } from "@/components/systems/i18n";
+import { formatMessage } from "@/lib/i18n/messages";
 import type { CSSProperties, KeyboardEvent } from "react";
 import type { NavigationItem } from "@/types/navigation";
 
@@ -13,6 +15,7 @@ export function RingNavigationBoundary({
   items,
   activeSlug,
 }: RingNavigationBoundaryProps) {
+  const { messages } = useI18n();
   const defaultSlug = activeSlug ?? items[0]?.slug;
   const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -57,7 +60,7 @@ export function RingNavigationBoundary({
   return (
     <section
       className="pointer-events-none relative h-full w-full overflow-hidden"
-      aria-label="Homepage ring navigation"
+      aria-label={messages.navigation.homepageRing}
     >
       <div
         className="absolute left-1/2 top-1/2"
@@ -85,7 +88,7 @@ export function RingNavigationBoundary({
 
         <div
           role="group"
-          aria-label="Homepage worlds"
+          aria-label={messages.navigation.homepageWorlds}
           className="absolute"
           style={{
             width: "var(--ring-size)",
@@ -142,7 +145,9 @@ export function RingNavigationBoundary({
       </div>
 
       <span className="sr-only">
-        Selected action: {items[selectedIndex]?.label ?? "Create"}
+        {formatMessage(messages.navigation.selectedAction, {
+          world: items[selectedIndex]?.label ?? items[0]?.label ?? "",
+        })}
       </span>
     </section>
   );

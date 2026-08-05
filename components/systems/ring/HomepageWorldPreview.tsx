@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useI18n } from "@/components/systems/i18n";
+import { formatMessage } from "@/lib/i18n/messages";
+import { localizeHref } from "@/lib/i18n/routing";
 import {
   useEffect,
   useLayoutEffect,
@@ -36,6 +39,7 @@ export function HomepageWorldPreview({
   chapters,
   mobileLayout,
 }: HomepageWorldPreviewProps) {
+  const { locale, messages } = useI18n();
   const previewRef = useRef<HTMLElement>(null);
   const measuredHeightRef = useRef(0);
   const [displayedWorld, setDisplayedWorld] = useState<PreviewWorld>({
@@ -100,13 +104,18 @@ export function HomepageWorldPreview({
       data-visible={isVisible ? "true" : "false"}
       data-layout-mode={mobileLayout?.layoutMode}
       style={previewStyle}
-      aria-label={`${displayedWorld.label} chapters`}
+      aria-label={formatMessage(messages.navigation.previewChapters, {
+        world: displayedWorld.label,
+      })}
     >
       <ul className={styles.list}>
         {displayedWorld.chapters.map((chapter) => (
           <li key={chapter.slug} className={styles.item}>
             <Link
-              href={`/${displayedWorld.slug}#${chapter.slug}`}
+              href={localizeHref(
+                `/${displayedWorld.slug}#${chapter.slug}`,
+                locale,
+              )}
               className={styles.link}
             >
               {chapter.name}

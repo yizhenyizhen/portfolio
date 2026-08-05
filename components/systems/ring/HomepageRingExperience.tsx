@@ -29,6 +29,7 @@ type HomepageRingExperienceProps = {
   font: string;
   scrollSpeed: number;
   scrollEase: number;
+  searchPlaceholder: string;
 };
 
 function clampValue(minimum: number, value: number, maximum: number) {
@@ -43,6 +44,7 @@ export function HomepageRingExperience({
   font,
   scrollSpeed,
   scrollEase,
+  searchPlaceholder,
 }: HomepageRingExperienceProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [searchValue, setSearchValue] = useState("");
@@ -147,7 +149,7 @@ export function HomepageRingExperience({
         onSubmit={handleSearchSubmit}
         onActivate={openWorkspace}
         geometry={ringGeometry}
-        placeholder={homepageSearchConfig.placeholder}
+        placeholder={searchPlaceholder}
         searchOffsetFromRing={effectiveSearchOffset}
         workspaceActive={workspaceActive}
       />
