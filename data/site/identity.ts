@@ -228,4 +228,12 @@ export const identityHeaderEntries: IdentityHeaderEntry[] = [
     ariaLabel: "Visit Zen Furniture",
   },
   toHeaderEntry(getIdentityEntry("horizon")),
+  {
+    key: "linkedin",
+    title: "LinkedIn",
+    href: "https://www.linkedin.com/in/yizhenz/",
+    type: "world-chapter",
+    external: true,
+    ariaLabel: "Open LinkedIn profile",
+  },
 ];

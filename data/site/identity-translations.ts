@@ -146,5 +146,13 @@ export function getLocalizedIdentityHeaderEntries(
       external: true,
     },
     toHeaderEntry(horizon, locale),
+    {
+      key: "linkedin",
+      title: "LinkedIn",
+      href: "https://www.linkedin.com/in/yizhenz/",
+      type: "world-chapter" as const,
+      external: true,
+      ariaLabel: "Open LinkedIn profile",
+    },
   ] satisfies IdentityHeaderEntry[];
 }

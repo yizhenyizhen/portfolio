@@ -31,7 +31,9 @@ export async function IdentityHeader() {
                     href={identity.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={messages.identity.visitZenFurniture}
+                    aria-label={
+                      identity.ariaLabel ?? messages.identity.visitZenFurniture
+                    }
                     className={className}
                   >
                     {content}
