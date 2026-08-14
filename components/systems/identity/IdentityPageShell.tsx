@@ -19,6 +19,8 @@ const LONG_TITLE_CHARACTER_THRESHOLD = 14;
 export function IdentityPageShell({ identity, locale }: IdentityPageShellProps) {
   const messages = getMessages(locale);
   const identityEntries = getLocalizedIdentityEntries(locale);
+  // Keep the Horizon CTA data intact so the entry can be restored without changing the route.
+  const showExternalAction = identity.slug !== "horizon";
   const chapters = [...identity.chapters].sort((a, b) => a.order - b.order);
   const identityIndex = identityEntries.findIndex(
     (entry) => entry.slug === identity.slug,
@@ -31,7 +33,9 @@ export function IdentityPageShell({ identity, locale }: IdentityPageShellProps) 
   return (
     <main
       className={`site-page ${
-        identity.externalAction ? "site-page--fixed-action" : ""
+        showExternalAction && identity.externalAction
+          ? "site-page--fixed-action"
+          : ""
       }`}
     >
       <div className="site-page__frame">
@@ -117,7 +121,7 @@ export function IdentityPageShell({ identity, locale }: IdentityPageShellProps) 
         </footer>
       </div>
 
-      {identity.externalAction ? (
+      {showExternalAction && identity.externalAction ? (
         <StarBorderLink
           href={identity.externalAction.href}
           label={identity.externalAction.label}
